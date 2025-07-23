@@ -1,0 +1,52 @@
+# Byte-compiled / cache / temporary files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+*.pot
+*.pyc
+
+# Virtual environment
+env/
+venv/
+myEnv/
+ENV/
+.venv/
+
+# VSCode / PyCharm / IDE configs
+.vscode/
+.idea/
+
+# Django specific
+*.sqlite3
+db.sqlite3
+*.pyc
+*.pyo
+*.pyd
+*.log
+
+# Secret settings
+*.env
+.env.*
+
+# Migrations (optional - but often kept if DB schema is versioned)
+**/migrations/__pycache__/
+**/migrations/*.pyc
+**/migrations/*.pyo
+
+# OS-generated
+.DS_Store
+Thumbs.db
+
+# media and static (optional)
+media/
+staticfiles/
+
+# pip package metadata
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Requirements lock (optional, if auto-generated)
+poetry.lock
+Pipfile.lock
