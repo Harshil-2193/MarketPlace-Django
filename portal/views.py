@@ -88,4 +88,7 @@ def logout_view(request):
 
 # Dashboard
 def portal(request):
-    return render(request, 'portal/dashboard.html')
+    storage = messages.get_messages(request)
+    for _ in storage:
+        pass
+    return render(request, 'portal/dashboard.html')  
