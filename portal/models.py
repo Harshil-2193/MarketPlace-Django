@@ -23,9 +23,9 @@ class Brand(models.Model):
     description = models.TextField()
 
     def clean(self):
-        if self.owner.role != 'seller':
-            raise ValidationError("Only sellers can own brands.")
-        
+        if hasattr(self, 'owner') and self.owner:
+            if self.owner.role != 'seller':
+                raise ValidationError("Only sellers can own brands.")
     class Meta:
         unique_together = ('brand_name', 'owner')
 

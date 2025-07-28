@@ -39,10 +39,7 @@ class UserProfileForm(forms.ModelForm):
         # if user.is_superuser:
         #  self.fields['role'].queryset = Role.objects.all()
         # else:
-        #     self.fields['role'].queryset = Role.objects.exclude(name='Admin')
-
-
-
+        #     self.fields['role'].queryset = Role.objects.exclude(name='Admin'
     class Meta:
         model = UserProfile
         fields = ['name','role']
@@ -52,3 +49,10 @@ class LoginForm(AuthenticationForm):
     class Meta:
         model = User
         fields = ['email', 'password']
+
+
+class BrandForm(forms.ModelForm):
+    class Meta:
+        model = Brand
+        fields = ['brand_name','description']
+

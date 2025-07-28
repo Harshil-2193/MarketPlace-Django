@@ -1,0 +1,48 @@
+{% extends "layout.html" %} 
+{% comment %} {% load static %} {% endcomment %}
+{% block title %}Brands{% endblock title %} 
+{% block content %} 
+
+    <div class="bg-gray-500">
+        <section class="p-4 max-w-7xl mx-auto ">
+            <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                {% for brand in brands %}
+                <div class="bg-gray-900 border border-gray-700 rounded-2xl shadow-lg hover:shadow-blue-600/30 transition duration-300 p-5">
+                    <h2 class="text-xl font-semibold text-white mb-2 tracking-wide">
+                        {{ brand.brand_name|upper }}
+                    </h2>
+                    
+            <div class="text-gray-400 text-sm mb-2">
+                <span class="text-blue-500">@{{ brand.owner.user.username }}</span>
+            </div>
+            
+            <p id="desc-{{ forloop.counter }}" class="text-gray-300 text-sm leading-relaxed overflow-hidden max-h-[4.5rem] transition-all duration-300">
+                {{ brand.description }}
+            </p>
+
+            {% if brand.description|length > 200 %}
+            <button 
+                class="mt-2 text-sm text-blue-400 hover:text-blue-300 focus:outline-none"
+                onclick="toggleDescription({{ forloop.counter }})">
+                View More
+            </button>
+            {% endif %}
+        </div>
+        {% empty %}
+        <p class="text-red-500">No brands found.</p>
+        {% endfor %}
+    </div>
+</section>
+</div>
+
+    <script>
+        function toggleDescription(id) {
+            const desc = document.getElementById(`desc-${id}`);
+            const btn = event.target;
+            const isExpanded = desc.classList.toggle('max-h-[4.5rem]');
+            btn.textContent = isExpanded ? "View More" : "View Less";
+        }
+    </script>
+
+
+{% endblock content %}

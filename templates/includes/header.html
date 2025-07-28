@@ -1,0 +1,50 @@
+<nav class="bg-gray-900 bg-opacity-80 backdrop-blur-md text-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+      
+      <div class="flex-shrink-0 text-xl font-semibold tracking-wide">
+        <a href="{% url "portal" %}">Patel's</a>
+      </div>
+
+      <div class="flex items-center space-x-6">
+        <a href="{% url "portal" %}" class="hover:text-blue-400 transition">Home</a>
+        <a href="{% url "all_brands_page" %}" class="hover:text-blue-400 transition">Brands</a>
+        <a href="{% url "create_brand_page" %}" class="hover:text-blue-400 transition">Create Brand</a>
+        <a href="#" class="hover:text-blue-400 transition">Contact</a>
+      </div>
+
+      <div class="flex items-center space-x-3">
+        {% if request.user.is_authenticated %}
+          <span class="text-sm text-gray-200">Welcome, {{ request.user.username }}</span>
+          <form action="{% url "logout_page" %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded transition">Logout</button>
+          </form>
+          {% else %}
+            <a href="{% url "login_page" %}" class="bg-blue-600 px-4 py-1 rounded hover:bg-blue-700 transition text-sm">Login</a>
+            <a href="{% url "register_page" %}" class="bg-green-600 px-4 py-1 rounded hover:bg-green-700 transition text-sm">Register</a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile Menu Button -->
+      <div class="md:hidden">
+        <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="focus:outline-none">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div class="md:hidden hidden px-4 pb-4 space-y-2" id="mobile-menu">
+    <a href="{% url "portal" %}" class="block text-white hover:text-blue-400">Home</a>
+    <a href="#" class="block text-white hover:text-blue-400">About</a>
+    <a href="#" class="block text-white hover:text-blue-400">Services</a>
+    <a href="#" class="block text-white hover:text-blue-400">Contact</a>
+    <a href="#" class="block bg-blue-600 text-white px-3 py-1 rounded mt-2 hover:bg-blue-700">Login</a>
+    <a href="#" class="block bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Register</a>
+  </div>
+</nav>
