@@ -1,5 +1,6 @@
 from urllib import request
-from django.shortcuts import render, HttpResponse, redirect
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
 from .forms import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -248,10 +249,59 @@ def create_product_view(request):
         else:
             form = ProductForm(user_profile=user_profile) # I is required to pass user_profile to the form to get the brands and category created by the user
 
-        return render(request, 'portal/create_product.html', {'productForm': form})
+        return render(request, 'portal/create_product.html', {'productForm': form, 'edit': False})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
         return redirect('portal')
         # brand = Brand.objects.filter(owner = UserProfile.objects.filter(user = request.user).first()).first()
 
+def my_products_view(request):
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        if user_profile.role != 'seller':
+            messages.error(request, "Only sellers can view their products.")
+            return redirect('portal')
+        
+        my_products = Product.objects.filter(owner=user_profile).order_by('-product_id')
+        if not my_products.exists():
+            messages.info(request, "You have no products yet.")
+            return redirect('portal')
+
+        return render(request, 'portal/my_products.html', {'my_products': my_products})
+    
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+    except Exception as e:
+        logger.exception("Error fetching user's products: %s", e)
+        messages.error(request, "Something went wrong while fetching your products.")
+        return redirect('portal')
+
+
+def edit_product_view(request,product_id):
+    product = get_object_or_404(Product, product_id=product_id, owner__user=request.user)
+
+    if product.owner.user != request.user:
+        messages.error(request, "You do not have permission to edit this product.")
+        return redirect('my_products_page')
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        return HttpResponseForbidden("Profile not found.")
+    if request.method == 'POST':
+        form = ProductForm(request.POST or None, request.FILES or None, instance=product,user_profile=user_profile)
+
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, "Product updated successfully.")
+                return redirect('my_products_page')
+            except Exception as e:
+                logger.exception(f"Error updating product: {e}")
+                messages.error(request, f"Error updating product: {e}")
+                return redirect('edit_product_page', product_id=product_id)
+    else:
+        form = ProductForm(instance=product, user_profile=user_profile)
+        
+    return render(request, 'portal/create_product.html', {'productForm': form, 'edit': True})

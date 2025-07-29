@@ -74,6 +74,9 @@ class ProductForm(forms.ModelForm):
             self.fields['brand'].queryset = Brand.objects.none()
         self.fields['category'].queryset = Category.objects.all()
 
+        if kwargs.get('instance'):
+            self.fields['brand'].disabled = True
+            
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
