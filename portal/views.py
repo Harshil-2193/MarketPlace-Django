@@ -278,7 +278,7 @@ def my_products_view(request):
         messages.error(request, "Something went wrong while fetching your products.")
         return redirect('portal')
 
-
+@login_required(login_url='login_page')
 def edit_product_view(request,product_id):
     product = get_object_or_404(Product, product_id=product_id, owner__user=request.user)
 
@@ -305,3 +305,24 @@ def edit_product_view(request,product_id):
         form = ProductForm(instance=product, user_profile=user_profile)
         
     return render(request, 'portal/create_product.html', {'productForm': form, 'edit': True})
+
+def delete_product_view(request, product_id):
+    product = get_object_or_404(Product, product_id=product_id, owner__user=request.user)
+    user_profile = UserProfile.objects.filter(user=request.user).first()
+    if not user_profile.role == 'seller' or product.owner != user_profile:
+        logger.warning(f"Unauthorized delete attempt by user {request.user} on product {product_id}")
+        messages.error(request, "You are not authorized to delete this product.")
+        return redirect('my_products_page')
+    
+    if request.method == 'POST':
+        try:
+            product.delete()
+            messages.success(request, "Product deleted successfully.")
+            logger.info(f"Product {product_id} deleted by user {request.user}")
+            return redirect('my_products_page')
+        except Exception as e:
+            logger.exception(f"Error deleting product: {e}")
+            messages.error(request, f"Error deleting product: {e}")
+            return redirect('my_products_page')
+    messages.error(request, "Invalid request method.")
+    return redirect('my_products_page')

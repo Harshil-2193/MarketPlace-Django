@@ -2,39 +2,39 @@
 {% load form_filters %}
 
 {% block title %}Dashboard{% endblock title %}
-          
+
 {% block content %}
-    <div class="bg-gray-100 min-h-screen py-6">
+<div class="bg-gray-900 dark:bg-gray-950 min-h-screen py-6">
     <section class="p-4 max-w-7xl mx-auto">
-        <h1 class="text-2xl font-bold text-center text-black mb-6 tracking-wide">Products</h1>
-        
+        <h1 class="text-2xl font-bold text-center text-black dark:text-white mb-6 tracking-wide">Products</h1>
+
         <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
             {% for product in products %}
-            <div class="bg-white border border-gray-200 rounded-2xl shadow-lg hover:shadow-green-500/30 transition duration-300 p-5">
-        
-                <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="w-full max-h-60 object-cover rounded-lg mb-4 bg-gray-200">
-                print(product.image.url)
-                <h2 class="text-xl font-semibold text-gray-800 mb-1">
+            <div class="bg-white dark:bg-gray-900 border border-gray-900 dark:border-gray-900 rounded-2xl shadow-lg hover:shadow-green-500/30 transition duration-300 p-5">
+
+                <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="w-full max-h-60 object-cover rounded-lg mb-4 bg-gray-200 dark:bg-gray-700">
+                
+                <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">
                     {{ product.product_name|title }}
                 </h2>
 
-                <div class="text-gray-500 text-sm mb-2">
+                <div class="text-gray-500 dark:text-gray-300 text-sm mb-2">
                     <span class="font-medium">SKU:</span> {{ product.sku }}
                 </div>
 
-                <p id="desc-{{ forloop.counter }}" class="text-gray-600 text-sm leading-relaxed overflow-hidden max-h-[4.5rem] transition-all duration-300">
+                <p id="desc-{{ forloop.counter }}" class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed overflow-hidden max-h-[4.5rem] transition-all duration-300">
                     {{ product.desc }}
                 </p>
-                
+
                 {% if product.desc|length > 200 %}
                 <button 
-                    class="mt-2 text-sm text-blue-500 hover:text-blue-400 focus:outline-none"
+                    class="mt-2 text-sm text-blue-500 dark:text-blue-400 hover:text-blue-400 dark:hover:text-blue-300 focus:outline-none"
                     onclick="toggleDescription({{ forloop.counter }})">
                     View More
                 </button>
                 {% endif %}
 
-                <div class="mt-4 text-gray-700 text-sm">
+                <div class="mt-4 text-gray-700 dark:text-gray-300 text-sm">
                     <p><span class="font-medium">Category:</span> {{ product.category.category_name }}</p>
                     <p><span class="font-medium">Brand:</span> {{ product.brand.brand_name }}</p>
                     <p><span class="font-medium">Qty:</span> {{ product.quantity }}</p>
@@ -42,7 +42,7 @@
                 </div>
             </div>
             {% empty %}
-                <p class="text-red-500">No products found.</p>
+                <p class="text-red-500 dark:text-red-400">No products found.</p>
             {% endfor %}
         </div>
     </section>
@@ -52,11 +52,8 @@
     function toggleDescription(id) {
         const desc = document.getElementById(`desc-${id}`);
         const btn = event.target;
-        const isExpanded = desc.classList.toggle('max-h-[4.5rem]');
-        btn.textContent = isExpanded ? "View More" : "View Less";
+        const isCollapsed = desc.classList.toggle('max-h-[4.5rem]');
+        btn.textContent = isCollapsed ? "View More" : "View Less";
     }
 </script>
 {% endblock content %}
-
-</body>
-</html>
