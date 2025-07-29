@@ -49,7 +49,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     brand = models.ForeignKey(Brand, on_delete=models.CASCADE)
     owner = models.ForeignKey(UserProfile, on_delete=models.CASCADE, limit_choices_to={'role': 'seller'})
-    
+
     height_cm = models.DecimalField(max_digits=6, decimal_places=2, help_text="Height in centimeters")
     width_cm = models.DecimalField(max_digits=6, decimal_places=2, help_text="Width in centimeters")
 

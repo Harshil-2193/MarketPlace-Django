@@ -1,3 +1,4 @@
+from urllib import request
 from django.shortcuts import render, HttpResponse, redirect
 from .forms import *
 from django.contrib import messages
@@ -97,8 +98,17 @@ def portal(request):
     storage = messages.get_messages(request)
     for _ in storage:
         pass
-    return render(request, 'portal/dashboard.html')  
-
+    try:
+        products = Product.objects.all().order_by('-product_id')
+        if not products.exists():
+            messages.info(request, "You have no Products yet.")
+            return redirect('portal')
+    except Exception as e:
+        logger.error(f"Error in Products View: {str(e)}")
+        messages.error(request, "Something went wrong while fetching products.")
+        return render(request, 'portal/dashboard.html', {'products': [], 'error': 'Something went wrong while fetching products.'})
+    
+    return render(request, 'portal/dashboard.html', {'products': products})
 # Brand
 @login_required(login_url='login_page')
 def create_brand_view(request):
@@ -157,7 +167,7 @@ def all_brands_view(request):
 @login_required(login_url='login_page')
 def my_brands_view(request):
     try:
-        user_profile = UserProfile.objects.get(user = request.user)
+        user_profile = UserProfile.objects.filter(user = request.user).first()
         if user_profile.role != 'seller':
             messages.error(request, "Only sellers can view their brands.")
             return redirect('portal')
@@ -165,7 +175,7 @@ def my_brands_view(request):
         if not brand.exists():
             messages.info(request, "You have no brands yet.")
             return redirect('portal')
-        return render(request, 'portal/my_brands.html', {'brands': brand})
+        return render(request, 'portal/my_brands.html', {'my_brands': brand})
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
         return redirect('portal')
@@ -173,3 +183,75 @@ def my_brands_view(request):
         logger.exception("Error fetching user's brands: %s", e)
         messages.error(request, "Something went wrong while fetching your brands.")
         return redirect('portal')
+
+@login_required(login_url='login_page')
+def create_category_view(request):
+    
+        
+    user_profile = UserProfile.objects.filter(user = request.user).first()
+
+    if not user_profile:
+        logger.warning(f"No user profile found for user: {request.user}")
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+    
+    if user_profile.role != 'seller':
+        logger.warning(f"Unauthorized access by user {request.user} with role {user_profile.role}")
+        messages.error(request, "Only sellers can view their brands.")
+        return redirect('portal')
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            try:
+                category = form.save()
+                messages.success(request, "Category created successfully.")
+                logger.info(f"Category created by user {request.user}")
+                return redirect('portal')
+            except Exception as e:
+                logger.exception(f"Exception occurred while saving category by user {request.user}: {e}")
+                messages.error(request, f"Error creating category: {e}")
+                return redirect('create_category_page')
+        else:
+            logger.warning(f"Form errors while creating category by user {request.user}: {form.errors}")
+            messages.error(request, f"{form.errors}")
+            return redirect('create_category_page')
+    else:
+        form = CategoryForm()
+    return render(request, 'portal/create_category.html', {'categoryForm': form})
+
+@login_required(login_url='login_page')
+def create_product_view(request):
+
+    def gen_sku():
+        import random
+        while True:
+            sku = str(random.randint(10**11, (10**12) -1))
+            if not Product.objects.filter(sku=sku).exists():
+                return sku
+            
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        if user_profile.role != 'seller':
+            messages.error(request, "Only sellers can create products.")
+            return redirect('portal')
+        if request.method == "POST":
+            form =  ProductForm(request.POST, request.FILES, user_profile=user_profile)
+            if form.is_valid():
+                product = form.save(commit=False)
+                product.owner = user_profile
+                product.sku = gen_sku()
+                product.full_clean()
+                product.save()
+                messages.success(request, "Product created successfully.")
+                return redirect('portal') # Change My products onece gets created leter on
+        else:
+            form = ProductForm(user_profile=user_profile) # I is required to pass user_profile to the form to get the brands and category created by the user
+
+        return render(request, 'portal/create_product.html', {'productForm': form})
+    
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+        # brand = Brand.objects.filter(owner = UserProfile.objects.filter(user = request.user).first()).first()
+

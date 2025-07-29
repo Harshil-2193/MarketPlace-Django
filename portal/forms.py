@@ -56,3 +56,28 @@ class BrandForm(forms.ModelForm):
         model = Brand
         fields = ['brand_name','description']
 
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['product_name', 'desc', 'image', 'quantity', 'category', 'brand', 'height_cm', 'width_cm']
+        widgets = {
+            'desc': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+            'image': forms.ClearableFileInput(attrs={'multiple': False}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        user_profile = kwargs.pop('user_profile', None)
+        super().__init__(*args, **kwargs)
+        if user_profile and user_profile.role == 'seller':
+            self.fields['brand'].queryset = Brand.objects.filter(owner=user_profile)
+        else:
+            self.fields['brand'].queryset = Brand.objects.none()
+        self.fields['category'].queryset = Category.objects.all()
+
+class CategoryForm(forms.ModelForm):
+    class Meta:
+        model = Category
+        fields = ['category_name', 'category_description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+        }

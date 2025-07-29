@@ -1,13 +1,12 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock title %}</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body>
+<body class="flex flex-col min-h-screen bg-gray-500">
     {% include "includes/header.html" %}
 
     {% if messages %}
@@ -17,9 +16,9 @@
                     {% if message.tags == 'error' %}
                         bg-red-100 text-red-800
                     {% elif message.tags == 'success' %}
-                        bg-green-100 text-green-800
+                        bg-green-400 text-green-800
                     {% else %}
-                        bg-blue-100 text-blue-800
+                        bg-blue-400 text-blue-800
                     {% endif %}
                 ">
                     {{ message }}
@@ -28,8 +27,10 @@
         {% endfor %}
     {% endif %}
 
-    {% block content %}
-    {% endblock content %}
+    <main class="flex-grow">
+        {% block content %}
+        {% endblock content %}
+    </main>
 
     {% include "includes/footer.html" %}
 </body>
