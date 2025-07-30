@@ -109,7 +109,7 @@ def portal(request):
         messages.error(request, "Something went wrong while fetching products.")
         return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
     
-    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products'})
+    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products','show_actions':False})
 # Brand
 @login_required(login_url='login_page')
 def create_brand_view(request):
@@ -268,7 +268,7 @@ def my_products_view(request):
             messages.info(request, "You have no products yet.")
             return redirect('portal')
 
-        return render(request, 'portal/dashboard.html', {'products': products,'title': 'My Products_', 'heading': 'My Products'})
+        return render(request, 'portal/dashboard.html', {'products': products,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
