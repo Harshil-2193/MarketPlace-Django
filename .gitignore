@@ -26,6 +26,7 @@ db.sqlite3
 *.pyd
 *.log
 
+ref/
 # Secret settings
 *.env
 .env.*

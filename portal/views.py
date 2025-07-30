@@ -107,9 +107,9 @@ def portal(request):
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [], 'error': 'Something went wrong while fetching products.'})
+        return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
     
-    return render(request, 'portal/dashboard.html', {'products': products})
+    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products'})
 # Brand
 @login_required(login_url='login_page')
 def create_brand_view(request):
@@ -156,11 +156,11 @@ def all_brands_view(request):
         for b in Brand.objects.all():
             print(b.brand_name, b.owner.role)
 
-        brand_list = Brand.objects.all()
+        brands = Brand.objects.all()
         # paginator = Paginator(brand_list,3)
         # page = request.GET.get('page')
         # brands = paginator.get_page(page)
-        return render(request, 'portal/all_brands.html', {'brands': brand_list})
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands'})
     except Exception as e:
         logger.error(f"Error in All_Brands_View: {str(e)}")
         return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brands.'})
@@ -172,11 +172,11 @@ def my_brands_view(request):
         if user_profile.role != 'seller':
             messages.error(request, "Only sellers can view their brands.")
             return redirect('portal')
-        brand = Brand.objects.filter(owner = user_profile)
-        if not brand.exists():
+        brands= Brand.objects.filter(owner = user_profile)
+        if not brands.exists():
             messages.info(request, "You have no brands yet.")
             return redirect('portal')
-        return render(request, 'portal/my_brands.html', {'my_brands': brand})
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands'})
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
         return redirect('portal')
@@ -263,12 +263,12 @@ def my_products_view(request):
             messages.error(request, "Only sellers can view their products.")
             return redirect('portal')
         
-        my_products = Product.objects.filter(owner=user_profile).order_by('-product_id')
-        if not my_products.exists():
+        products = Product.objects.filter(owner=user_profile).order_by('-product_id')
+        if not products.exists():
             messages.info(request, "You have no products yet.")
             return redirect('portal')
 
-        return render(request, 'portal/my_products.html', {'my_products': my_products})
+        return render(request, 'portal/dashboard.html', {'products': products,'title': 'My Products_', 'heading': 'My Products'})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
