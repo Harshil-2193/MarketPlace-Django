@@ -2,10 +2,14 @@
 {% load form_filters %}
 
 {% block title %}{{title}}{% endblock title %}
-
+z
 {% block content %}
 <div class="bg-gray-900 dark:bg-gray-950 min-h-screen py-6">
     <section class="p-4 max-w-7xl mx-auto">
+        {% if show_actions %}
+            <button class="bg-green-500 px-2 py-3 text-white hover:bg-green-600 rounded-lg"><a href="{% url "create_product_page" %}">Register New Product</a></button>
+        {% endif %}
+
         <h1 class="text-2xl font-bold text-center text-black dark:text-white mb-6 tracking-wide">{{heading}}</h1>
 
         <div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">

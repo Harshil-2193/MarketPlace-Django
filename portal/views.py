@@ -160,7 +160,7 @@ def all_brands_view(request):
         # paginator = Paginator(brand_list,3)
         # page = request.GET.get('page')
         # brands = paginator.get_page(page)
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands'})
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands','show_actions': False})
     except Exception as e:
         logger.error(f"Error in All_Brands_View: {str(e)}")
         return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brands.'})
@@ -176,7 +176,7 @@ def my_brands_view(request):
         if not brands.exists():
             messages.info(request, "You have no brands yet.")
             return redirect('portal')
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands'})
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands', 'show_actions': True})
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
         return redirect('portal')

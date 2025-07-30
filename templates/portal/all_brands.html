@@ -4,6 +4,9 @@
 {% block content %}
 <div class="bg-gray-950 min-h-screen py-10">
     <section class="px-4 max-w-7xl mx-auto">
+        {% if show_actions %}
+            <button class="bg-green-500 px-2 py-3 text-white hover:bg-green-600 rounded-lg"><a href="{% url "create_brand_page" %}">Register New Brand</a></button>
+        {% endif %}
         <h1 class="text-3xl font-bold text-center text-white mb-10 tracking-wider">{{heading}}</h1>
 
         <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
