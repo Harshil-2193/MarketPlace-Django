@@ -8,15 +8,14 @@
                         <div>
                             {% comment %} USer Form Here {% endcomment %}
                             {% for field in loginForm %}
-                                <div>
-                                    <label for="{{field.id_for_label}}" class="block mb-1  text-gray-700 font-medium">{{field.label}}</label>
-                                    {{field|add_class:'form-control w-full p-2 mb-4 border-2 border-gray-300 rounded-xl focus:border-green-500 outline-none'}}
+                                <div class="mb-4">
+                                    <label for="{{field.id_for_label}}" class="block mb-1 text-gray-700 font-medium">{{ field.label }}</label>
+                                    {{ field|add_class:'form-control w-full p-2 border-2 border-gray-300 rounded-xl focus:border-green-500 outline-none' }}
                                     {% if field.errors %}
-                                        <p class="text-xs text-red-600 mt-1">{{field.errors.0}}</p>
+                                        <p class="text-xs text-red-600 mt-1">{{ field.errors.0 }}</p>
                                     {% endif %}
                                 </div>
                             {% endfor %}
-                            
                         </div>
                         <div class="pt-6">
                             <button type="submit" class="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition">Login</button>

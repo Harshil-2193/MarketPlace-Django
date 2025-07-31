@@ -30,7 +30,7 @@ class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, *kwargs)
         
-        self.fields['role'].choices = [choice for choice in self.fields['role'].choices if choice[0] != '']
+        self.fields['role'].choices = [choice for choice in self.fields['role'].choices if  isinstance(choice, tuple) and choice[0] != '']
         # This wont work as Django renders it a ChopiceField not ModelChoiceField and choicefield doesnt use empty_lable it uses blank=true
         # self.fields['role'].empty_label  =None
         # self.fields['role'].initial = 'Seller'  
@@ -52,6 +52,7 @@ class LoginForm(AuthenticationForm):
 
 
 class BrandForm(forms.ModelForm):
+   
     class Meta:
         model = Brand
         fields = ['brand_name','description']

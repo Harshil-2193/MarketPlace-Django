@@ -27,6 +27,7 @@ def login_view(request):
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
         return redirect('portal')
+    
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -46,8 +47,8 @@ def login_view(request):
                 return redirect('login_page')
         else:
             logger.warning("Login form errors: %s", form.errors)
-            messages.error(request, f"{form.errors}")
-            return redirect('login_page')
+            messages.error(request, "Please enter valid credentials.")
+            return render(request, 'auth/login.html', {'loginForm': form})
     else:
         form = LoginForm()
         
@@ -77,12 +78,17 @@ def register_view(request):
             except Exception as e:
                 messages.error(request, f"Unexpected Error: {e}")
                 logger.exception("Register userForm Exception: ",e)
-                return redirect('register_page')
+                return render(request, 'auth/register.html', {
+                    'userForm': userForm,
+                    'profileForm': profileForm
+                })
         else:
             logger.warning("Register userForm Error: ",userForm.errors)
             logger.warning("Register ProfileForm Error: ",profileForm.errors)
-            messages.error(request, f"{userForm.errors} - {profileForm.errors}")
-            return redirect('register_page')
+            return render(request, 'auth/register.html', {
+                'userForm': userForm,
+                'profileForm': profileForm
+            })
     else:
         userForm = UserRegistrationForm()
         profileForm = UserProfileForm()
