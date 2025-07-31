@@ -5,14 +5,17 @@
       <div class="flex-shrink-0 text-xl font-semibold tracking-wide">
         <a href="{% url "portal" %}">Patel's</a>
       </div>
+      
 
       <div class="flex items-center space-x-6">
         <a href="{% url "portal" %}" class="hover:text-blue-400 transition">Home</a>
         <a href="{% url "all_brands_page" %}" class="hover:text-blue-400 transition">Brands</a>
-        {% comment %} <a href="{% url "create_brand_page" %}" class="hover:text-blue-400 transition">Create Brand</a> {% endcomment %}
-        <a href="{% url "my_brands_page" %}" class="hover:text-blue-400 transition">My Brands</a>
-        {% comment %} <a href="{% url "create_product_page" %}" class="hover:text-blue-400 transition">Register Product</a> {% endcomment %}
-        <a href="{% url "my_products_page" %}" class="hover:text-blue-400 transition">My Products</a>
+        {% if request.user.is_authenticated and role == 'seller' %}
+          <a href="{% url "my_brands_page" %}" class="hover:text-blue-400 transition">My Brands</a>
+          <a href="{% url "create_product_page" %}" class="hover:text-blue-400 transition">Register Product</a>
+          <a href="{% url "my_products_page" %}" class="hover:text-blue-400 transition">My Products</a>
+          <a href="{% url "create_brand_page" %}" class="hover:text-blue-400 transition">Create Brand</a>
+        {% endif %}
       </div>
 
       <div class="flex items-center space-x-3">

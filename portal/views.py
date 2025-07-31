@@ -11,13 +11,22 @@ from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 from .models import *
 logger = logging.getLogger(__name__)
+
+def get_userRole(request):
+    if request.user.is_authenticated:
+        try:
+            profile = UserProfile.objects.get(user=request.user)
+            return profile.role
+        except UserProfile.DoesNotExist:
+            return None
+    return None
+    
 # Login And Register
 def login_view(request):
 
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
         return redirect('portal')
-
     if request.method == "POST":
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
@@ -92,7 +101,7 @@ def logout_view(request):
             messages.error(request, "Something went wrong while logging you out.")
     else:
         messages.info(request,"You are not logged in")
-    return redirect('login_page')
+    return redirect('portal')
 
 # Dashboard
 def portal(request):
@@ -108,82 +117,7 @@ def portal(request):
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
         return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    
-    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products','show_actions':False})
-# Brand
-@login_required(login_url='login_page')
-def create_brand_view(request):
-    if request.method == "POST":
-        brandForm = BrandForm(request.POST)
-        if brandForm.is_valid():
-            try:
-                user_profile = UserProfile.objects.get(user=request.user)
-                logger.info(f"UserProfile found: {user_profile}, Role: {user_profile.role}")
-                if user_profile.role != 'seller':
-                    messages.error(request, "Only sellers can create brands.")
-                    return redirect('create_brand_page')
-
-                brand = brandForm.save(commit=False)
-                brand.owner = user_profile
-                brand.full_clean()
-                brand.save()
-
-                messages.success(request, "Brand created successfully.")
-                return redirect('portal')
-
-            except UserProfile.DoesNotExist:
-                messages.error(request, "No user profile found for this user.")
-                return redirect('create_brand_page')
-            except Exception as e:
-                logger.exception(f"Error during brand creation: {e}")
-                messages.error(request, f"Error creating brand: {e}")
-                return redirect('create_brand_page')
-        else:
-            logger.exception("Something wrong while validating brand creation Form")
-            messages.error(request, "Enter data in proper format")
-            return redirect('create_brand_page')
-    else:
-        brandForm = BrandForm()
-    return render(request, 'portal/create_brand.html', {'brand':brandForm})
-
-def create_category_view(request):
-    return render(request, 'portal/create_category.html')
-
-@login_required(login_url='login_page')
-def all_brands_view(request):
-    try:
-        from portal.models import Brand
-        for b in Brand.objects.all():
-            print(b.brand_name, b.owner.role)
-
-        brands = Brand.objects.all()
-        # paginator = Paginator(brand_list,3)
-        # page = request.GET.get('page')
-        # brands = paginator.get_page(page)
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands','show_actions': False})
-    except Exception as e:
-        logger.error(f"Error in All_Brands_View: {str(e)}")
-        return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brands.'})
-
-@login_required(login_url='login_page')
-def my_brands_view(request):
-    try:
-        user_profile = UserProfile.objects.filter(user = request.user).first()
-        if user_profile.role != 'seller':
-            messages.error(request, "Only sellers can view their brands.")
-            return redirect('portal')
-        brands= Brand.objects.filter(owner = user_profile)
-        if not brands.exists():
-            messages.info(request, "You have no brands yet.")
-            return redirect('portal')
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'My Brands','heading': 'My Brands', 'show_actions': True})
-    except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
-    except Exception as e:
-        logger.exception("Error fetching user's brands: %s", e)
-        messages.error(request, "Something went wrong while fetching your brands.")
-        return redirect('portal')
+    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 @login_required(login_url='login_page')
 def create_category_view(request):
@@ -326,3 +260,127 @@ def delete_product_view(request, product_id):
             return redirect('my_products_page')
     messages.error(request, "Invalid request method.")
     return redirect('my_products_page')
+
+# Brand
+@login_required(login_url='login_page')
+def create_brand_view(request):
+    if request.method == "POST":
+        brandForm = BrandForm(request.POST)
+        if brandForm.is_valid():
+            try:
+                user_profile = UserProfile.objects.get(user=request.user)
+                logger.info(f"UserProfile found: {user_profile}, Role: {user_profile.role}")
+                if user_profile.role != 'seller':
+                    messages.error(request, "Only sellers can create brands.")
+                    return redirect('create_brand_page')
+
+                brand = brandForm.save(commit=False)
+                brand.owner = user_profile
+                brand.full_clean()
+                brand.save()
+
+                messages.success(request, "Brand created successfully.")
+                return redirect('portal')
+
+            except UserProfile.DoesNotExist:
+                messages.error(request, "No user profile found for this user.")
+                return redirect('create_brand_page')
+            except Exception as e:
+                logger.exception(f"Error during brand creation: {e}")
+                messages.error(request, f"Error creating brand: {e}")
+                return redirect('create_brand_page')
+        else:
+            logger.exception("Something wrong while validating brand creation Form")
+            messages.error(request, "Enter data in proper format")
+            return redirect('create_brand_page')
+    else:
+        brandForm = BrandForm()
+    return render(request, 'portal/create_brand.html', {'brand':brandForm, 'edit': False, 'title': 'Create Brand', 'heading': 'Create Brand'})
+
+def create_category_view(request):
+    return render(request, 'portal/create_category.html')
+
+@login_required(login_url='login_page')
+def all_brands_view(request):
+    try:
+        from portal.models import Brand
+        for b in Brand.objects.all():
+            print(b.brand_name, b.owner.role)
+
+        brands = Brand.objects.all()
+        # paginator = Paginator(brands,3)
+        # page = request.GET.get('page')
+        # brands = paginator.get_page(page)
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'Brands','heading': 'Brands','show_actions': False})
+    except Exception as e:
+        logger.error(f"Error in All_Brands_View: {str(e)}")
+        return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brands.'})
+
+@login_required(login_url='login_page')
+def my_brands_view(request):
+    try:
+        user_profile = UserProfile.objects.filter(user = request.user).first()
+        if user_profile.role != 'seller':
+            messages.error(request, "Only sellers can view their brands.")
+            return redirect('portal')
+        brands= Brand.objects.filter(owner = user_profile)
+        if not brands.exists():
+            messages.info(request, "You have no brands yet.")
+            return redirect('portal')
+        return render(request, 'portal/all_brands.html', {'brands': brands, 'is_my':True, 'title': 'My Brands','heading': 'My Brands', 'show_actions': True})
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+    except Exception as e:
+        logger.exception("Error fetching user's brands: %s", e)
+        messages.error(request, "Something went wrong while fetching your brands.")
+        return redirect('portal')
+    
+@login_required(login_url='login_page')
+def edit_brand_view(request, brand_name):
+
+    brand = get_object_or_404(Brand, brand_name=brand_name, owner__user=request.user)
+
+    if brand.owner.user != request.user:
+        messages.error(request, "You do not have permission to edit this product.")
+        return redirect('my_products_page')
+    
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        return HttpResponseForbidden("Profile not found.")
+    if request.method == 'POST':
+        brandFom = BrandForm(request.POST or None, instance=brand)
+        if brandFom.is_valid():
+            try:
+                brandFom.save()
+                messages.success(request, "Brand updated successfully.")
+                return redirect('my_brands_page')
+            except Exception as e:
+                logger.exception(f"Error updating brand: {e}")
+                messages.error(request, f"Error updating brand: {e}")
+                return redirect('edit_brand_page', brand_name=brand_name)
+    else:
+        brandFom = BrandForm(instance=brand)
+    return render(request, 'portal/create_brand.html', {'brand': brandFom, 'edit': True, 'title': 'Edit Brand', 'heading': 'Edit Brand'})
+
+def delete_brand_view(request, brand_name):
+    if request.method != 'POST':
+        messages.error(request, "Invalid request method.")
+        return redirect('my_brands_page')
+    
+    brand = get_object_or_404(Brand, brand_name=brand_name, owner__user=request.user)
+    user_profile = UserProfile.objects.filter(user=request.user).first()
+    if not user_profile or user_profile.role != 'seller' or brand.owner != user_profile:
+        logger.warning(f"Unauthorized delete attempt by user {request.user} on brand {brand_name}")
+        messages.error(request, "You are not authorized to delete this brand.")
+        return redirect('my_brands_page')
+    try:
+        brand.delete()
+        messages.success(request, "Brand deleted successfully.")
+        logger.info(f"Brand {brand_name} deleted by user {request.user}")
+        return redirect('my_brands_page')
+    except Exception as e:
+        logger.exception(f"Error deleting brand {brand_name}: {e}")
+        messages.error(request, f"Error deleting brand {brand_name}: {e}")
+        return redirect('my_brands_page')
