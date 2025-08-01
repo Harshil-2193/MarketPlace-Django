@@ -3,6 +3,36 @@ from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
+class UserCombinedProfileForm(forms.Form):
+    
+    username = forms.CharField(max_length=150, required=True, label='Username')
+    email = forms.EmailField(required=True, label='Email')
+    name = forms.CharField(max_length=50, required=True, label='Name')
+    role = forms.ChoiceField(choices=UserProfile.userRole, required=True, label='Role')
+
+    def __init__(self, *args, **kwargs):
+        user_instance = kwargs.pop('user_instance', None)
+        profile_instance = kwargs.pop('profile_instance', None)
+        super().__init__(*args, **kwargs)
+
+        if user_instance:
+            self.fields['username'].initial = user_instance.username
+            self.fields['email'].initial = user_instance.email
+        if profile_instance:
+            self.fields['name'].initial = profile_instance.name
+            self.fields['role'].initial = profile_instance.role
+    def save(self,user_instance=None, profile_instance=None):
+        if not self.is_valid():
+            raise ValueError("Cannot save the form if it's not valid.")
+        user_instance.username = self.cleaned_data['username']
+        user_instance.email = self.cleaned_data['email']
+        user_instance.save()
+
+        profile_instance.name = self.cleaned_data['name']
+        profile_instance.role = self.cleaned_data['role']
+        profile_instance.save()
+
+
 class UserRegistrationForm(UserCreationForm):
     password1 = forms.CharField(
         label="Password",
@@ -28,7 +58,8 @@ class UserRegistrationForm(UserCreationForm):
 
 class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
-        super(UserProfileForm, self).__init__(*args, *kwargs)
+        super(UserProfileForm, self).__init__(*args, **kwargs)
+
         
         self.fields['role'].choices = [choice for choice in self.fields['role'].choices if  isinstance(choice, tuple) and choice[0] != '']
         # This wont work as Django renders it a ChopiceField not ModelChoiceField and choicefield doesnt use empty_lable it uses blank=true

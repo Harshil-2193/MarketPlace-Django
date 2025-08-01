@@ -416,6 +416,43 @@ def product_details_view(request, product_id):
         logger.exception(f"Error fetching product details: {e}")
         messages.error(request, "Something went wrong while fetching product details.")
         return redirect('portal')
-    
+@login_required(login_url='login_page')    
 def view_profile_view(request):
-    return HttpResponse("Profile View is not implemented yet.")
+    try:
+        user_profile = UserProfile.objects.get(user=request.user)
+        if not user_profile:
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
+        return render(request, 'portal/view_profile.html', {'profile': user_profile, 'title': 'View Profile', 'heading': 'View Profile'})
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+    except Exception as e:
+        logger.exception(f"Error fetching user profile: {e}")
+        messages.error(request, "Something went wrong while fetching your profile.")
+        return redirect('portal')
+    
+
+@login_required(login_url='login_page')
+def edit_profile_view(request):
+    try:
+       user_profile = UserProfile.objects.get(user=request.user)
+    except UserProfile.DoesNotExist:
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+
+    if request.method == 'POST':
+        form = UserCombinedProfileForm(request.POST, user_instance=request.user, profile_instance=user_profile)
+        if form.is_valid():
+            try:
+                form.save(request.user, user_profile)
+                messages.success(request, "Profile updated successfully.")
+                return redirect('view_profile_page')
+            except Exception as e:
+                logger.exception(f"Error updating profile: {e}")
+                messages.error(request, f"Error updating profile: {e}")
+                return redirect('edit_profile_page')
+    else:
+        form = UserCombinedProfileForm(user_instance=request.user, profile_instance=user_profile)
+
+        return render(request, 'portal/update_profile.html', {'form': form, 'title': 'Edit Profile', 'heading': 'Edit Profile'})
