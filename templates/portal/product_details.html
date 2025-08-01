@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ product.product_name|title }} - Details{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 dark:bg-gray-950 py-10 min-h-screen">
+    <div class="max-w-4xl mx-auto bg-white dark:bg-gray-900 p-6 rounded-xl shadow-xl">
+        <img src="{{ product.image.url }}" class="w-full max-h-[400px] object-cover rounded-lg mb-6 bg-gray-200 dark:bg-gray-800">
+
+        <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-2">{{ product.product_name|title }}</h1>
+        <p class="text-sm text-gray-500 dark:text-gray-300 mb-4">SKU: {{ product.sku }}</p>
+
+        <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">{{ product.desc }}</p>
+
+        <div class="text-gray-600 dark:text-gray-400 space-y-1 text-sm">
+            <p><span class="font-medium">Category:</span> {{ product.category.category_name }}</p>
+            <p><span class="font-medium">Brand:</span> {{ product.brand.brand_name }}</p>
+            <p><span class="font-medium">Quantity:</span> {{ product.quantity }}</p>
+            <p><span class="font-medium">Size:</span> {{ product.height_cm }}cm x {{ product.width_cm }}cm</p>
+            <p>
+                <span class="font-medium">Status:</span>
+                {% if product.status %}
+                    <span class="text-green-600 font-semibold">Active</span>
+                {% else %}
+                    <span class="text-red-500 font-semibold">Inactive</span>
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

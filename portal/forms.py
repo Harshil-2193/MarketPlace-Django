@@ -58,9 +58,14 @@ class BrandForm(forms.ModelForm):
         fields = ['brand_name','description']
 
 class ProductForm(forms.ModelForm):
+    STATUS_CHOICES = (
+        (True, 'Active'),
+        (False, 'Not Active'),
+    )
+    status = forms.TypedChoiceField(choices=STATUS_CHOICES, coerce=lambda x: x == 'True', initial=True, widget=forms.RadioSelect,  label="Product Status")
     class Meta:
         model = Product
-        fields = ['product_name', 'desc', 'image', 'quantity', 'category', 'brand', 'height_cm', 'width_cm']
+        fields = ['product_name', 'desc', 'image', 'quantity','status', 'category', 'brand', 'height_cm', 'width_cm']
         widgets = {
             'desc': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
             'image': forms.ClearableFileInput(attrs={'multiple': False}),

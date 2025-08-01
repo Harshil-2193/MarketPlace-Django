@@ -25,6 +25,11 @@
             {% csrf_token %}
             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded transition">Logout</button>
           </form>
+           <a href="{% url 'view_profile_page' %}" class="relative block w-10 h-10 rounded-full overflow-hidden border-2 border-gray-400 dark:border-white hover:ring-2 hover:ring-blue-500">
+                <div class="w-full h-full bg-blue-500 flex items-center justify-center text-white font-bold uppercase">
+                    {{ request.user.username|slice:":1" }}
+                </div>
+            </a>
           {% else %}
             <a href="{% url "login_page" %}" class="bg-blue-600 px-4 py-1 rounded hover:bg-blue-700 transition text-sm">Login</a>
             <a href="{% url "register_page" %}" class="bg-green-600 px-4 py-1 rounded hover:bg-green-700 transition text-sm">Register</a>

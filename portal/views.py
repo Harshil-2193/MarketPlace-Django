@@ -115,15 +115,26 @@ def portal(request):
     for _ in storage:
         pass
     try:
-        products = Product.objects.all().order_by('-product_id')
+        products = Product.objects.filter(status = "True").order_by('-product_id')
         if not products.exists():
             messages.info(request, "You have no Products yet.")
             return redirect('portal')
+        # PAgination
+        page = request.GET.get('page', 1)
+        paginator = Paginator(products,3)
+
+        try:
+            paginated_products = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_products = paginator.page(1)
+        except EmptyPage:
+            paginated_products = paginator.page(paginator.num_pages)
+
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
         return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    return render(request, 'portal/dashboard.html', {'products': products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+    return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 @login_required(login_url='login_page')
 def create_category_view(request):
@@ -390,3 +401,21 @@ def delete_brand_view(request, brand_name):
         logger.exception(f"Error deleting brand {brand_name}: {e}")
         messages.error(request, f"Error deleting brand {brand_name}: {e}")
         return redirect('my_brands_page')
+
+def product_details_view(request, product_id):
+    try:
+        product = get_object_or_404(Product, product_id=product_id)
+        if not product.status:
+            messages.error(request, "This product is not available.")
+            return redirect('my_products_page')
+        return render(request, 'portal/product_details.html', {'product': product, 'title': 'Product Details', 'heading': 'Product Details'})
+    except ObjectDoesNotExist:
+        messages.error(request, "Product not found.")
+        return redirect('portal')
+    except Exception as e:
+        logger.exception(f"Error fetching product details: {e}")
+        messages.error(request, "Something went wrong while fetching product details.")
+        return redirect('portal')
+    
+def view_profile_view(request):
+    return HttpResponse("Profile View is not implemented yet.")

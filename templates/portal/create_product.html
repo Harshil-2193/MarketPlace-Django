@@ -13,8 +13,16 @@
 
             {% for field in productForm %}
                 <div class="mb-5">
-                    <label for="{{ field.id_for_label }}" class="block mb-2 text-gray-700 font-semibold">{{ field.label }}</label>
-                    {{ field|add_class:'form-control w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none' }}
+                    {% if field.field.widget.input_type == 'checkbox' %}
+                       <div class="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">
+                            {{ field|add_class:"form-checkbox h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-400" }}
+                            <label for="{{ field.id_for_label }}" class="text-gray-700 font-medium">{{ field.label }}</label>
+                        </div>
+                    {% else %}
+                        <label for="{{ field.id_for_label }}" class="block mb-2 text-gray-700 font-semibold">{{ field.label }}</label>
+                        {{ field|add_class:'form-control w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none' }}
+                    {% endif %}
+
                     {% if field.errors %}
                         <p class="text-sm text-red-600 mt-1">{{ field.errors.0 }}</p>
                     {% endif %}

@@ -55,3 +55,6 @@ class Product(models.Model):
 
     def __str__(self):
         return self.product_name.upper()
+
+    # Shell : Product.objects.filter(status__isnull=True).update(status=True)
+    # Shell : Product.objects.all().update(status=True)
