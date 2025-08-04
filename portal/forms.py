@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django import forms
 from .models import *
 from django.contrib.auth.models import User
@@ -100,11 +101,12 @@ class BrandForm(forms.ModelForm):
         fields = ['brand_name','description']
 
 class ProductForm(forms.ModelForm):
-    STATUS_CHOICES = (
-        (True, 'Active'),
-        (False, 'Not Active'),
-    )
-    status = forms.TypedChoiceField(choices=STATUS_CHOICES, coerce=lambda x: x == 'True', initial=True, widget=forms.RadioSelect,  label="Product Status")
+    STATUS_CHOICES = ((True, 'Active'),(False, 'Not Active'))
+    UNIT_CHOICES = ( ('cm', 'Centimeters'),('inch', 'Inches')) 
+
+    status = forms.TypedChoiceField(choices=STATUS_CHOICES, coerce=lambda x: x == 'True', initial=True, widget=forms.Select,  label="Product Status")
+    unit = forms.ChoiceField(choices=UNIT_CHOICES, label="Unit", initial='cm')
+
     class Meta:
         model = Product
         fields = ['product_name', 'desc', 'image', 'quantity','status', 'category', 'brand', 'height_cm', 'width_cm']
@@ -112,10 +114,11 @@ class ProductForm(forms.ModelForm):
             'desc': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
             'image': forms.ClearableFileInput(attrs={'multiple': False}),
         }
-
     def __init__(self, *args, **kwargs):
         user_profile = kwargs.pop('user_profile', None)
         super().__init__(*args, **kwargs)
+        self.fields['height_cm'].label = "Height"
+        self.fields['width_cm'].label = "Width"
         if user_profile and user_profile.role == 'seller':
             self.fields['brand'].queryset = Brand.objects.filter(owner=user_profile)
         else:
@@ -124,7 +127,20 @@ class ProductForm(forms.ModelForm):
 
         if kwargs.get('instance'):
             self.fields['brand'].disabled = True
-            
+        
+    def clean(self):
+        cleaned_data = super().clean()
+        unit = cleaned_data.get('unit')
+        height = cleaned_data.get('height_cm')
+        width = cleaned_data.get('width_cm')
+
+        if unit == 'inch':
+            if height and width:
+                cleaned_data['height_cm'] =round(height * Decimal('2.54'), 2)
+                cleaned_data['width_cm'] = round(width * Decimal('2.54'), 2)
+
+        return cleaned_data
+    
 class CategoryForm(forms.ModelForm):
     class Meta:
         model = Category
