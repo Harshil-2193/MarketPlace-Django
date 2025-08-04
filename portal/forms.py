@@ -8,7 +8,7 @@ class UserCombinedProfileForm(forms.Form):
     username = forms.CharField(max_length=150, required=True, label='Username')
     email = forms.EmailField(required=True, label='Email')
     name = forms.CharField(max_length=50, required=True, label='Name')
-    role = forms.ChoiceField(choices=UserProfile.userRole, required=True, label='Role')
+    role = forms.ChoiceField(choices=UserProfile.userRole, label='Role', disabled=True, help_text="Role cannot be changed after creation")
 
     def __init__(self, *args, **kwargs):
         user_instance = kwargs.pop('user_instance', None)
@@ -21,6 +21,10 @@ class UserCombinedProfileForm(forms.Form):
         if profile_instance:
             self.fields['name'].initial = profile_instance.name
             self.fields['role'].initial = profile_instance.role
+            self.fields['role'].widget.attrs.update({
+                 'style': 'opacity: 0.9; cursor: not-allowed;  color: #888;'
+            })
+            
     def save(self,user_instance=None, profile_instance=None):
         if not self.is_valid():
             raise ValueError("Cannot save the form if it's not valid.")
@@ -56,6 +60,12 @@ class UserRegistrationForm(UserCreationForm):
         if password1 and password2 and password1 != password2:
             self.add_error('password2',"Password do not match")
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Email already exists. Please use a different email.")
+        return email
+
 class UserProfileForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(UserProfileForm, self).__init__(*args, **kwargs)
@@ -77,6 +87,7 @@ class UserProfileForm(forms.ModelForm):
 
 
 class LoginForm(AuthenticationForm):
+    username = forms.CharField(max_length=150, required=True, label='Username or Email', widget=forms.TextInput(attrs={'autofocus': True}))
     class Meta:
         model = User
         fields = ['email', 'password']

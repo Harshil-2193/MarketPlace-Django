@@ -28,14 +28,16 @@
                         <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed overflow-hidden max-h-[4.5rem]">
                             {{ product.desc|truncatechars:100 }}
                         </p>
-                        <p>
-                            <span class="font-medium text-blue-500">Status:</span>
+                        {% if show_actions %}
+                            <p>
+                                <span class="font-medium text-blue-500">Status:</span>
                                 {% if product.status %}
-                                    <span class="text-green-600 font-semibold">Active</span>
+                                <span class="text-green-600 font-semibold">Active</span>
                                 {% else %}
-                                    <span class="text-red-500 font-semibold">Inactive</span>
+                                <span class="text-red-500 font-semibold">Inactive</span>
                                 {% endif %}
-                        </p>
+                            </p>
+                        {% endif %}
                     </div>
                 </a>
             {% empty %}

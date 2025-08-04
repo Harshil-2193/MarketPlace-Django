@@ -17,14 +17,16 @@
             <p><span class="font-medium">Brand:</span> {{ product.brand.brand_name }}</p>
             <p><span class="font-medium">Quantity:</span> {{ product.quantity }}</p>
             <p><span class="font-medium">Size:</span> {{ product.height_cm }}cm x {{ product.width_cm }}cm</p>
-            <p>
-                <span class="font-medium">Status:</span>
-                {% if product.status %}
+            {% if show_actions %}
+                <p>
+                    <span class="font-medium">Status:</span>
+                    {% if product.status %}
                     <span class="text-green-600 font-semibold">Active</span>
-                {% else %}
+                    {% else %}
                     <span class="text-red-500 font-semibold">Inactive</span>
-                {% endif %}
-            </p>
+                    {% endif %}
+                </p>
+            {% endif %}
         </div>
     </div>
 </div>
