@@ -25,6 +25,6 @@ urlpatterns = [
     path('view_profile/', views.view_profile_view, name="view_profile_page"),
     path('edit_profile/', views.edit_profile_view, name="edit_profile_page"),
 
-    path('search/',views.search_view, name="search_products"),
+    path('search/',views.search_products_view, name="search_products"),
 
 ]

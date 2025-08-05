@@ -11,6 +11,8 @@ from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
 import time
 from django.db import connection,reset_queries
+from django.http import JsonResponse
+from django.template.loader import render_to_string
 from .models import *
 logger = logging.getLogger(__name__)
 
@@ -452,7 +454,6 @@ def delete_brand_view(request, brand_name):
 def create_category_view(request):
     return render(request, 'portal/create_category.html')
 
-
 # Profile
 @login_required(login_url='login_page')    
 def view_profile_view(request):
@@ -495,5 +496,23 @@ def edit_profile_view(request):
         return render(request, 'portal/update_profile.html', {'form': form, 'title': 'Edit Profile', 'heading': 'Edit Profile'})
     
 #Serach
-def search_view(request):
-        pass
+def search_products_view(request):
+    try:
+        query = request.GET.get('q', '').strip()
+        if query:
+            print(f"Search Query: {query}")
+            products = Product.objects.select_related('brand','owner').filter(
+                # product_name__icontais = query,
+                product_name__istartswith=query,
+                status=True
+            ).order_by('-product_id')
+        else:
+            products = Product.objects.select_related('brand', 'owner').filter(status=True).order_by('-product_id')
+    
+        html = render_to_string('portal/_product_list.html',{'products':products})
+        return JsonResponse({'html': html})
+    except Exception as e:
+       logger.exception(f"Error while searching products; {e}")
+       messages.error(request, "Something went wrong while searching products.")
+       return redirect('portal')
+    
