@@ -36,6 +36,8 @@ ref/
 **/migrations/*.pyc
 **/migrations/*.pyo
 
+utilities.py
+
 # OS-generated
 .DS_Store
 Thumbs.db

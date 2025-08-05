@@ -9,6 +9,8 @@ from django.db import transaction
 import logging
 from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
+import time
+from django.db import connection,reset_queries
 from .models import *
 logger = logging.getLogger(__name__)
 
@@ -23,7 +25,6 @@ def get_userRole(request):
     
 # Login And Register
 def login_view(request):
-
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
         return redirect('portal')
@@ -111,17 +112,22 @@ def logout_view(request):
 
 # Dashboard
 def portal(request):
-    storage = messages.get_messages(request)
-    for _ in storage:
-        pass
+    reset_queries()
+    # start = time.time()
+
     try:
-        products = Product.objects.filter(status = "True").order_by('-product_id')
+        products = Product.objects.select_related('brand','owner').filter(status = "True").order_by('-product_id')
         if not products.exists():
             messages.info(request, "You have no Products yet.")
             return redirect('portal')
+        
+        # for p in products:
+        #     _ = p.brand.brand_name
+        #     _ = p.owner.user.email
+
         # PAgination
         page = request.GET.get('page', 1)
-        paginator = Paginator(products,3)
+        paginator = Paginator(products,12)
 
         try:
             paginated_products = paginator.page(page)
@@ -134,12 +140,17 @@ def portal(request):
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
         return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+    
+    # end = time.time()
+    # print("Time Taken: ", end - start)
+    # print ("Queries: ", len(connection.queries))
+    # for q in connection.queries:
+    #     # print(q['sql']) 
     return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 @login_required(login_url='login_page')
 def create_category_view(request):
-    
-        
+ 
     user_profile = UserProfile.objects.filter(user = request.user).first()
 
     if not user_profile:
@@ -172,6 +183,7 @@ def create_category_view(request):
         form = CategoryForm()
     return render(request, 'portal/create_category.html', {'categoryForm': form})
 
+# Product
 @login_required(login_url='login_page')
 def create_product_view(request):
 
@@ -181,7 +193,6 @@ def create_product_view(request):
             sku = str(random.randint(10**11, (10**12) -1))
             if not Product.objects.filter(sku=sku).exists():
                 return sku
-            
     try:
         user_profile = UserProfile.objects.get(user=request.user)
         if user_profile.role != 'seller':
@@ -207,18 +218,39 @@ def create_product_view(request):
         return redirect('portal')
         # brand = Brand.objects.filter(owner = UserProfile.objects.filter(user = request.user).first()).first()
 
+@login_required(login_url='login_page')
 def my_products_view(request):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
+        
+        reset_queries()
+        # start = time.time()
+
         if user_profile.role != 'seller':
             messages.error(request, "Only sellers can view their products.")
             return redirect('portal')
         
-        products = Product.objects.filter(owner=user_profile).order_by('-product_id')
+        products = Product.objects.select_related('brand','owner__user').filter(owner=user_profile).order_by('-product_id')
+        
+        # for p in products:
+        #     print(p.brand.brand_name)  # accesses foreign key
+        #     print(p.owner.user.email)  # nested foreign key
+
         if not products.exists():
             messages.info(request, "You have no products yet.")
             return redirect('portal')
 
+        # end = time.time()
+        # print("Time Taken My: ", end - start)
+        # print ("Queries My: ", len(connection.queries))
+        # from django.http import JsonResponse
+        # after products query and prints
+        # if request.GET.get('debug') == '1':
+        #     return JsonResponse({
+        #         "products_count": products.count(),
+        #         "queries": connection.queries,
+        #         "time_taken": end - start
+        #     })
         return render(request, 'portal/dashboard.html', {'products': products,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
@@ -257,6 +289,7 @@ def edit_product_view(request,product_id):
         
     return render(request, 'portal/create_product.html', {'productForm': form, 'edit': True})
 
+@login_required(login_url='login_page')
 def delete_product_view(request, product_id):
     product = get_object_or_404(Product, product_id=product_id, owner__user=request.user)
     user_profile = UserProfile.objects.filter(user=request.user).first()
@@ -277,6 +310,21 @@ def delete_product_view(request, product_id):
             return redirect('my_products_page')
     messages.error(request, "Invalid request method.")
     return redirect('my_products_page')
+
+def product_details_view(request, product_id):
+    try:
+        product = get_object_or_404(Product, product_id=product_id)
+        if not product.status:
+            messages.error(request, "This product is not available.")
+            return redirect('my_products_page')
+        return render(request, 'portal/product_details.html', {'product': product, 'title': 'Product Details', 'heading': 'Product Details'})
+    except ObjectDoesNotExist:
+        messages.error(request, "Product not found.")
+        return redirect('portal')
+    except Exception as e:
+        logger.exception(f"Error fetching product details: {e}")
+        messages.error(request, "Something went wrong while fetching product details.")
+        return redirect('portal')
 
 # Brand
 @login_required(login_url='login_page')
@@ -314,10 +362,6 @@ def create_brand_view(request):
         brandForm = BrandForm()
     return render(request, 'portal/create_brand.html', {'brand':brandForm, 'edit': False, 'title': 'Create Brand', 'heading': 'Create Brand'})
 
-def create_category_view(request):
-    return render(request, 'portal/create_category.html')
-
-@login_required(login_url='login_page')
 def all_brands_view(request):
     try:
         from portal.models import Brand
@@ -381,6 +425,7 @@ def edit_brand_view(request, brand_name):
         brandFom = BrandForm(instance=brand)
     return render(request, 'portal/create_brand.html', {'brand': brandFom, 'edit': True, 'title': 'Edit Brand', 'heading': 'Edit Brand'})
 
+@login_required(login_url='login_page')
 def delete_brand_view(request, brand_name):
     if request.method != 'POST':
         messages.error(request, "Invalid request method.")
@@ -402,20 +447,13 @@ def delete_brand_view(request, brand_name):
         messages.error(request, f"Error deleting brand {brand_name}: {e}")
         return redirect('my_brands_page')
 
-def product_details_view(request, product_id):
-    try:
-        product = get_object_or_404(Product, product_id=product_id)
-        if not product.status:
-            messages.error(request, "This product is not available.")
-            return redirect('my_products_page')
-        return render(request, 'portal/product_details.html', {'product': product, 'title': 'Product Details', 'heading': 'Product Details'})
-    except ObjectDoesNotExist:
-        messages.error(request, "Product not found.")
-        return redirect('portal')
-    except Exception as e:
-        logger.exception(f"Error fetching product details: {e}")
-        messages.error(request, "Something went wrong while fetching product details.")
-        return redirect('portal')
+# Category
+@login_required(login_url='login_page')
+def create_category_view(request):
+    return render(request, 'portal/create_category.html')
+
+
+# Profile
 @login_required(login_url='login_page')    
 def view_profile_view(request):
     try:
@@ -432,7 +470,6 @@ def view_profile_view(request):
         messages.error(request, "Something went wrong while fetching your profile.")
         return redirect('portal')
     
-
 @login_required(login_url='login_page')
 def edit_profile_view(request):
     try:
@@ -456,3 +493,7 @@ def edit_profile_view(request):
         form = UserCombinedProfileForm(user_instance=request.user, profile_instance=user_profile)
 
         return render(request, 'portal/update_profile.html', {'form': form, 'title': 'Edit Profile', 'heading': 'Edit Profile'})
+    
+#Serach
+def search_view(request):
+        pass
