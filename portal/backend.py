@@ -4,8 +4,7 @@ from django.db.models import Q
 
 
 class EmailOrUsernameBackend(ModelBackend):
-    def authenticate(self, request, username = None, password = None, **kwargs):
-        
+    def authenticate(self, request, username = None, password = None, **kwargs): 
         try:
             user = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=username)).first()
         except User.DoesNotExist:

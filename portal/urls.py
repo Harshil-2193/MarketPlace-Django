@@ -26,5 +26,6 @@ urlpatterns = [
     path('edit_profile/', views.edit_profile_view, name="edit_profile_page"),
 
     path('search/',views.search_products_view, name="search_products"),
+    path('my_products/search/',views.search_my_products_view, name="search_myproducts"),
 
 ]

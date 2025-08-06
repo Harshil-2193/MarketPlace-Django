@@ -13,6 +13,7 @@ import time
 from django.db import connection,reset_queries
 from django.http import JsonResponse
 from django.template.loader import render_to_string
+from django.db.models import Q
 from .models import *
 logger = logging.getLogger(__name__)
 
@@ -500,19 +501,40 @@ def search_products_view(request):
     try:
         query = request.GET.get('q', '').strip()
         if query:
-            print(f"Search Query: {query}")
+            logger.info(f"Search Query: {query}")
             products = Product.objects.select_related('brand','owner').filter(
                 # product_name__icontais = query,
-                product_name__istartswith=query,
+                # product_name__istartswith=query,
+                Q(product_name__icontains=query) | Q(product_name__istartswith=query),
                 status=True
             ).order_by('-product_id')
         else:
             products = Product.objects.select_related('brand', 'owner').filter(status=True).order_by('-product_id')
-    
         html = render_to_string('portal/_product_list.html',{'products':products})
         return JsonResponse({'html': html})
     except Exception as e:
        logger.exception(f"Error while searching products; {e}")
        messages.error(request, "Something went wrong while searching products.")
        return redirect('portal')
+    
+def search_my_products_view(request):
+    try:
+        query = request.GET.get('q','').strip()
+        user_profile = UserProfile.objects.filter(user=request.user).first()
+
+        if query:
+            products = Product.objects.select_related('brand','owner').filter(
+                Q(product_name__icontains=query) | Q(product_name__istartswith=query),
+            ).filter(owner=user_profile)
+        else:
+            products = Product.objects.select_related('brand','owner').filter(owner=user_profile)
+
+        html = render_to_string('portal/_product_list.html', {'products': products})
+        return JsonResponse({'html': html})
+    
+    except Exception as e:
+        logger.exception(f"Error while searching my products: {e}")
+        messages.error(request,"Something went wrong while searching your products.")
+        return redirect('my_products_page')
+    
     
