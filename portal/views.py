@@ -450,6 +450,22 @@ def delete_brand_view(request, brand_name):
         messages.error(request, f"Error deleting brand {brand_name}: {e}")
         return redirect('my_brands_page')
 
+def brand_products_view(request, brand_name):
+    try:
+        brand = get_object_or_404(Brand, brand_name=brand_name)
+        products = Product.objects.filter(brand=brand,status=True).select_related('owner__user').order_by('-product_id')
+        if not products.exists():
+            messages.info(request, "No products found for this brand.")
+            return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'No products found for this brand.'})
+        return render(request,'portal/dashboard.html', {'products': products, 'title': f'Products of {brand_name}', 'heading': f'Products of {brand_name}', 'show_actions': False})
+    except Brand.DoesNotExist:
+        messages.error(request, "Brand not found.")
+        return render(request,'poral/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brand products.'})
+    except Exception as e:
+        logger.exception(f'Error while fetching the brand products:{e}')
+        messages.error(request,"Something went wrong while fetching brand products.")
+        return render(request,'poral/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brand products.'})
+
 # Category
 @login_required(login_url='login_page')
 def create_category_view(request):
@@ -536,5 +552,4 @@ def search_my_products_view(request):
         logger.exception(f"Error while searching my products: {e}")
         messages.error(request,"Something went wrong while searching your products.")
         return redirect('my_products_page')
-    
     

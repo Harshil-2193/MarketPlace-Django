@@ -42,6 +42,9 @@
                         <div class="text-gray-500 dark:text-gray-300 text-sm mb-2">
                             <span class="font-medium">Owner:</span> {{ product.owner.user.username }}
                         </div>
+                        <div class="text-gray-500 dark:text-gray-300 text-sm mb-2">
+                            <span class="font-medium">Brand:</span> {{ product.brand.brand_name }}
+                        </div>
 
                         <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed overflow-hidden max-h-[4.5rem] mb-3">
                             {{ product.desc|truncatechars:100 }}

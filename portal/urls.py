@@ -19,6 +19,7 @@ urlpatterns = [
     path('my_brands/', views.my_brands_view, name="my_brands_page"), 
     path('brand_edit/<str:brand_name>/', views.edit_brand_view, name="edit_brand_page"),
     path('brand_delete/<str:brand_name>/', views.delete_brand_view, name="delete_brand_page"),
+    path('brand_products/<str:brand_name>/', views.brand_products_view, name="brand_products_page"),
     
     path('create_category/', views.create_category_view, name="create_category_page"),
     
