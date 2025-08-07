@@ -528,7 +528,7 @@ def search_products_view(request):
             products = Product.objects.select_related('brand','owner').filter(
                 # product_name__icontais = query,
                 # product_name__istartswith=query,
-                Q(product_name__icontains=query) | Q(product_name__istartswith=query),
+                Q(Q(product_name__icontains=query) | Q(product_name__istartswith=query)|Q(sku__icontains=query)),
                 status=True
             ).order_by('-product_id')
         else:
@@ -547,7 +547,7 @@ def search_my_products_view(request):
 
         if query:
             products = Product.objects.select_related('brand','owner').filter(
-                Q(product_name__icontains=query) | Q(product_name__istartswith=query),
+                Q(product_name__icontains=query) | Q(product_name__istartswith=query | Q(sku__icontains=query)),
             ).filter(owner=user_profile)
         else:
             products = Product.objects.select_related('brand','owner').filter(owner=user_profile)

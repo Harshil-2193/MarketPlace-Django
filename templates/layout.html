@@ -10,22 +10,32 @@
 <body class="flex flex-col min-h-screen bg-gray-500">
     {% include "includes/header.html" %}
 
-    {% if messages %}
-        {% for message in messages %}
+   {% if messages %}
+        <div class="space-y-3 ">
+            {% for message in messages %}
             {% if message %}
-                <div class="text-sm rounded p-3 mb-2
+               <div
+                id="msg-{{ forloop.counter }}"
+                class="flex justify-between items-start gap-3 p-4 text-sm relative rounded border-l-2 shadow overflow-hidden
                     {% if message.tags == 'error' %}
-                        bg-red-100 text-red-800
+                    bg-red-100 text-red-800 border-red-400
                     {% elif message.tags == 'success' %}
-                        bg-green-400 text-green-800
+                    bg-green-100 text-green-800 border-green-400
                     {% else %}
-                        bg-blue-400 text-blue-800
-                    {% endif %}
-                ">
-                    {{ message }}
+                    bg-yellow-100 text-yellow-800 border-yellow-400
+                    {% endif %}">
+                
+                <div class="flex items-start gap-2">
+                    <p class="max-w-lg">{{ message }}</p>
+                </div>
+
+                <button onclick="this.parentElement.remove()" class="text-lg font-bold leading-none hover:text-black">
+                    &times;
+                </button>
                 </div>
             {% endif %}
-        {% endfor %}
+            {% endfor %}
+        </div>
     {% endif %}
 
     <main class="flex-grow">
