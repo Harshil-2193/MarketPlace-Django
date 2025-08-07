@@ -4,23 +4,25 @@
 {% block title %}Register Product{% endblock title %}
 
 {% block content %}
-<section class="flex justify-center items-center min-h-screen bg-gray-100 px-4 py-8">
-    <div class="w-full max-w-2xl bg-white shadow-xl rounded-2xl p-8">
-        <h2 class="text-3xl font-bold text-center text-gray-800 mb-6"> {% if edit %} Update Product {% else %} Register Product {% endif %}</h2>
+<section class="bg-gray-900 dark:bg-gray-950 min-h-screen flex items-center justify-center py-10 px-4">
+    <div class="w-full max-w-3xl bg-white dark:bg-gray-900 border border-gray-700 rounded-2xl shadow-xl p-8">
+        <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white mb-8">
+            {% if edit %} Update Product {% else %} Register Product {% endif %}
+        </h2>
         
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
             {% for field in productForm %}
-                <div class="mb-5">
+                <div class="mb-6">
                     {% if field.field.widget.input_type == 'checkbox' %}
-                       <div class="flex items-center gap-3 bg-gray-50 px-4 py-3 rounded-xl border border-gray-200">
-                            {{ field|add_class:"form-checkbox h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-400" }}
-                            <label for="{{ field.id_for_label }}" class="text-gray-700 font-medium">{{ field.label }}</label>
+                        <div class="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600">
+                            {{ field|add_class:"form-checkbox h-5 w-5 text-blue-600 focus:ring-2 focus:ring-blue-400 dark:ring-offset-gray-800" }}
+                            <label for="{{ field.id_for_label }}" class="text-gray-800 dark:text-gray-100 font-medium">{{ field.label }}</label>
                         </div>
                     {% else %}
-                        <label for="{{ field.id_for_label }}" class="block mb-2 text-gray-700 font-semibold">{{ field.label }}</label>
-                        {{ field|add_class:'form-control w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-400 focus:outline-none' }}
+                        <label for="{{ field.id_for_label }}" class="block mb-2 text-gray-700 dark:text-gray-300 font-semibold">{{ field.label }}</label>
+                        {{ field|add_class:'w-full p-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none' }}
                     {% endif %}
 
                     {% if field.errors %}
@@ -30,7 +32,9 @@
             {% endfor %}
 
             <div class="pt-4">
-                <button type="submit" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition duration-300"> {% if edit %} Update Product {% else %} Register Product {% endif %}</button>
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition duration-300">
+                    {% if edit %} Update Product {% else %} Register Product {% endif %}
+                </button>
             </div>
         </form>
     </div>

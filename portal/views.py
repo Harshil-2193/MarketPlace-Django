@@ -26,7 +26,7 @@ def get_userRole(request):
             return None
     return None
     
-# Login And Register
+#Login And Register
 def login_view(request):
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
@@ -113,7 +113,7 @@ def logout_view(request):
         messages.info(request,"You are not logged in")
     return redirect('portal')
 
-# Dashboard
+#Dashboard
 def portal(request):
     reset_queries()
     # start = time.time()
@@ -128,9 +128,9 @@ def portal(request):
         #     _ = p.brand.brand_name
         #     _ = p.owner.user.email
 
-        # PAgination
+        # Pagination
         page = request.GET.get('page', 1)
-        paginator = Paginator(products,12)
+        paginator = Paginator(products,6)
 
         try:
             paginated_products = paginator.page(page)
@@ -139,6 +139,7 @@ def portal(request):
         except EmptyPage:
             paginated_products = paginator.page(paginator.num_pages)
 
+    
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
@@ -151,42 +152,8 @@ def portal(request):
     #     # print(q['sql']) 
     return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
-@login_required(login_url='login_page')
-def create_category_view(request):
- 
-    user_profile = UserProfile.objects.filter(user = request.user).first()
 
-    if not user_profile:
-        logger.warning(f"No user profile found for user: {request.user}")
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
-    
-    if user_profile.role != 'seller':
-        logger.warning(f"Unauthorized access by user {request.user} with role {user_profile.role}")
-        messages.error(request, "Only sellers can view their brands.")
-        return redirect('portal')
-
-    if request.method == "POST":
-        form = CategoryForm(request.POST)
-        if form.is_valid():
-            try:
-                category = form.save()
-                messages.success(request, "Category created successfully.")
-                logger.info(f"Category created by user {request.user}")
-                return redirect('portal')
-            except Exception as e:
-                logger.exception(f"Exception occurred while saving category by user {request.user}: {e}")
-                messages.error(request, f"Error creating category: {e}")
-                return redirect('create_category_page')
-        else:
-            logger.warning(f"Form errors while creating category by user {request.user}: {form.errors}")
-            messages.error(request, f"{form.errors}")
-            return redirect('create_category_page')
-    else:
-        form = CategoryForm()
-    return render(request, 'portal/create_category.html', {'categoryForm': form})
-
-# Product
+#Product
 @login_required(login_url='login_page')
 def create_product_view(request):
 
@@ -235,6 +202,15 @@ def my_products_view(request):
         
         products = Product.objects.select_related('brand','owner__user').filter(owner=user_profile).order_by('-product_id')
         
+        page = request.GET.get('page',1)
+        paginator = Paginator(products, 6)
+
+        try:
+            paginated_products = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_products = paginator.page(1)
+        except EmptyPage:
+            paginated_products = paginator.page(paginator.num_pages)
         # for p in products:
         #     print(p.brand.brand_name)  # accesses foreign key
         #     print(p.owner.user.email)  # nested foreign key
@@ -254,7 +230,7 @@ def my_products_view(request):
         #         "queries": connection.queries,
         #         "time_taken": end - start
         #     })
-        return render(request, 'portal/dashboard.html', {'products': products,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
+        return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
@@ -329,7 +305,7 @@ def product_details_view(request, product_id):
         messages.error(request, "Something went wrong while fetching product details.")
         return redirect('portal')
 
-# Brand
+#Brand
 @login_required(login_url='login_page')
 def create_brand_view(request):
     if request.method == "POST":
@@ -466,12 +442,43 @@ def brand_products_view(request, brand_name):
         messages.error(request,"Something went wrong while fetching brand products.")
         return render(request,'poral/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brand products.'})
 
-# Category
+#Category
 @login_required(login_url='login_page')
 def create_category_view(request):
-    return render(request, 'portal/create_category.html')
+ 
+    user_profile = UserProfile.objects.filter(user = request.user).first()
 
-# Profile
+    if not user_profile:
+        logger.warning(f"No user profile found for user: {request.user}")
+        messages.error(request, "User profile not found.")
+        return redirect('portal')
+    
+    if user_profile.role != 'seller':
+        logger.warning(f"Unauthorized access by user {request.user} with role {user_profile.role}")
+        messages.error(request, "Only sellers can view their brands.")
+        return redirect('portal')
+
+    if request.method == "POST":
+        form = CategoryForm(request.POST)
+        if form.is_valid():
+            try:
+                category = form.save()
+                messages.success(request, "Category created successfully.")
+                logger.info(f"Category created by user {request.user}")
+                return redirect('portal')
+            except Exception as e:
+                logger.exception(f"Exception occurred while saving category by user {request.user}: {e}")
+                messages.error(request, f"Error creating category: {e}")
+                return redirect('create_category_page')
+        else:
+            logger.warning(f"Form errors while creating category by user {request.user}: {form.errors}")
+            messages.error(request, f"{form.errors}")
+            return redirect('create_category_page')
+    else:
+        form = CategoryForm()
+    return render(request, 'portal/create_category.html', {'categoryForm': form})
+
+#Profile
 @login_required(login_url='login_page')    
 def view_profile_view(request):
     try:
@@ -552,4 +559,3 @@ def search_my_products_view(request):
         logger.exception(f"Error while searching my products: {e}")
         messages.error(request,"Something went wrong while searching your products.")
         return redirect('my_products_page')
-    

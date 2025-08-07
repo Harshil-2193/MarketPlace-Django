@@ -1,6 +1,5 @@
 
-alert("Heloowww")
-
+console.log("Js Loaded")
 function toggleDescription(id) {
     const desc = document.getElementById(`desc-${id}`);
     const btn = event.target;
@@ -33,4 +32,29 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error:', error);
         });
     });
+    // Stop rerenders on Pagination   
+    // function setupPaginationLinks() {
+    //     document.querySelectorAll('.ajax-page-link').forEach(link => {
+    //         link.addEventListener('click', function (e) {
+    //             e.preventDefault();
+    //             const url = this.href;
+
+    //             fetch(url, {
+    //                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    //             })
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 document.querySelector('#productList').innerHTML = data.html;
+    //                 console.log("Pagination content loaded via AJAX");
+    //                 history.pushState(null, '', url); 
+    //                 setupPaginationLinks();
+    //             });
+    //         });
+    //     });
+    // }
+
+    // setupPaginationLinks();
 });
+
+
+

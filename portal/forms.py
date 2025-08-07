@@ -7,7 +7,7 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 class UserCombinedProfileForm(forms.Form):
     
     username = forms.CharField(max_length=150, required=True, label='Username')
-    email = forms.EmailField(required=True, label='Email')
+    email = forms.EmailField(required=True, label='Email', disabled=True, help_text="Email cannot be changed.")
     name = forms.CharField(max_length=50, required=True, label='Name')
     role = forms.ChoiceField(choices=UserProfile.userRole, label='Role', disabled=True, help_text="Role cannot be changed after creation")
 
@@ -19,6 +19,9 @@ class UserCombinedProfileForm(forms.Form):
         if user_instance:
             self.fields['username'].initial = user_instance.username
             self.fields['email'].initial = user_instance.email
+            self.fields['email'].widget.attrs.update({
+                'style': 'opacity: 0.9; cursor: not-allowed;  color: #888;'
+            })
         if profile_instance:
             self.fields['name'].initial = profile_instance.name
             self.fields['role'].initial = profile_instance.role
@@ -146,5 +149,5 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ['category_name', 'category_description']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+            'category_description': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
         }

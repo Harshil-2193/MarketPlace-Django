@@ -9,7 +9,6 @@ class EmailOrUsernameBackend(ModelBackend):
             user = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=username)).first()
         except User.DoesNotExist:
             return None
-        
         if user is not None and user.check_password(password):
             return user
         return None

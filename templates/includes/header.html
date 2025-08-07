@@ -8,19 +8,19 @@
       
 
       <div class="flex items-center space-x-6">
-        <a href="{% url "portal" %}" class="hover:text-blue-400 transition">Home</a>
-        <a href="{% url "all_brands_page" %}" class="hover:text-blue-400 transition">Brands</a>
+        <a href="{% url "portal" %}" class="transition {% if request.resolver_match.url_name == 'portal' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">Home</a>
+        <a href="{% url "all_brands_page" %}" class="transition {% if request.resolver_match.url_name == 'all_brands_page' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">Brands</a>
         {% if request.user.is_authenticated and role == 'seller' %}
-          <a href="{% url "my_brands_page" %}" class="hover:text-blue-400 transition">My Brands</a>
-          <a href="{% url "create_product_page" %}" class="hover:text-blue-400 transition">Register Product</a>
-          <a href="{% url "my_products_page" %}" class="hover:text-blue-400 transition">My Products</a>
-          <a href="{% url "create_brand_page" %}" class="hover:text-blue-400 transition">Create Brand</a>
+          <a href="{% url "my_brands_page" %}" class="transition {% if request.resolver_match.url_name == 'my_brands_page' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">My Brands</a>
+          <a href="{% url "my_products_page" %}" class=" transition {% if request.resolver_match.url_name == 'my_products_page' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">My Products</a>
+          <a href="{% url "create_product_page" %}" class=" transition {% if request.resolver_match.url_name == 'create_product_page' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">Register Product</a>
+          <a href="{% url "create_brand_page" %}" class=" transition {% if request.resolver_match.url_name == 'create_brand_page' %}text-blue-400 {% else %}hover:text-blue-400 {% endif %}">Create Brand</a>
         {% endif %}
       </div>
 
       <div class="flex items-center space-x-3">
         {% if request.user.is_authenticated %}
-          <span class="text-sm text-gray-200">Welcome, {{ request.user.username }}</span>
+          {% comment %} <span class="text-sm text-gray-200">Welcome, {{ request.user.username }}</span> {% endcomment %}
           <form action="{% url "logout_page" %}" method="post">
             {% csrf_token %}
             <button type="submit" class="bg-red-600 hover:bg-red-700 text-white text-sm px-3 py-1 rounded transition">Logout</button>
@@ -54,7 +54,16 @@
     <a href="#" class="block text-white hover:text-blue-400">About</a>
     <a href="#" class="block text-white hover:text-blue-400">Services</a>
     <a href="#" class="block text-white hover:text-blue-400">Contact</a>
-    <a href="#" class="block bg-blue-600 text-white px-3 py-1 rounded mt-2 hover:bg-blue-700">Login</a>
-    <a href="#" class="block bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Register</a>
+    {% if request.user.is_authenticated %}
+        <form action="{% url 'logout_page' %}" method="post">
+          {% csrf_token %}
+          <button type="submit" class="block w-full text-left bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">Logout</button>
+        </form>
+        <a href="{% url 'view_profile_page' %}" class="block text-white hover:text-blue-400">Profile</a>
+    {% else %}
+          <a href="{% url 'login_page' %}" class="block bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700">Login</a>
+          <a href="{% url 'register_page' %}" class="block bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">Register</a>
+    {% endif %}
+
   </div>
 </nav>
