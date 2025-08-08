@@ -98,10 +98,18 @@ class LoginForm(AuthenticationForm):
 
 
 class BrandForm(forms.ModelForm):
-   
     class Meta:
         model = Brand
         fields = ['brand_name','description']
+        widgets = {
+            'description':forms.Textarea(attrs={
+                'style':'resize:none;',
+                'rows':4,
+                'cols':50,
+            })
+        }
+
+
 
 class ProductForm(forms.ModelForm):
     STATUS_CHOICES = ((True, 'Active'),(False, 'Not Active'))
@@ -116,6 +124,11 @@ class ProductForm(forms.ModelForm):
         widgets = {
             'desc': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
             'image': forms.ClearableFileInput(attrs={'multiple': False}),
+            'desc':forms.Textarea(attrs={
+                'style':'resize:none;',
+                'rows':4,
+                'cols':40
+            })
         }
     def __init__(self, *args, **kwargs):
         user_profile = kwargs.pop('user_profile', None)
@@ -149,5 +162,5 @@ class CategoryForm(forms.ModelForm):
         model = Category
         fields = ['category_name', 'category_description']
         widgets = {
-            'category_description': forms.Textarea(attrs={'rows': 4, 'cols': 40}),
+            'category_description': forms.Textarea(attrs={'style':'resize:none;','rows': 4, 'cols': 40}),
         }

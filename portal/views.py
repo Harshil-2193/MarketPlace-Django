@@ -127,7 +127,7 @@ def portal(request):
         
         # Pagination
         page = request.GET.get('page', 1)
-        paginator = Paginator(products,6)
+        paginator = Paginator(products,8)
 
         try:
             paginated_products = paginator.page(page)
@@ -193,7 +193,7 @@ def my_products_view(request):
         if selected_brand:
             products = products.filter(brand__brand_name=selected_brand)
         page = request.GET.get('page',1)
-        paginator = Paginator(products, 6)
+        paginator = Paginator(products, 8)
 
         try:
             paginated_products = paginator.page(page)

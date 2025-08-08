@@ -11,32 +11,79 @@
     {% include "includes/header.html" %}
 
    {% if messages %}
-        <div class="space-y-3 ">
+        <div class="fixed top-20 right-5 z-[100] space-y-4 max-w-sm">
             {% for message in messages %}
-            {% if message %}
-               <div
-                id="msg-{{ forloop.counter }}"
-                class="flex justify-between items-start gap-3 p-4 text-sm relative rounded border-l-2 shadow overflow-hidden
-                    {% if message.tags == 'error' %}
-                    bg-red-100 text-red-800 border-red-400
-                    {% elif message.tags == 'success' %}
-                    bg-green-100 text-green-800 border-green-400
-                    {% else %}
-                    bg-yellow-100 text-yellow-800 border-yellow-400
-                    {% endif %}">
-                
-                <div class="flex items-start gap-2">
-                    <p class="max-w-lg">{{ message }}</p>
-                </div>
+                {% if message %}
 
-                <button onclick="this.parentElement.remove()" class="text-lg font-bold leading-none hover:text-black">
-                    &times;
-                </button>
-                </div>
-            {% endif %}
+                    {% if message.tags == 'error' %}
+                        <div id="msg-{{ forloop.counter }}"
+                             class="relative flex items-center justify-between gap-4 p-5 rounded-2xl shadow-xl overflow-hidden
+                                    bg-gray-900/50 backdrop-blur-lg border border-red-600"
+                             style="min-width: 20rem;">
+
+                            <div class="flex items-start gap-4">
+                                <div class="text-red-400 flex-shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="max-w-lg text-gray-300 font-medium">{{ message }}</p>
+                            </div>
+
+                            <button onclick="this.closest('div').remove()" class="text-xl font-bold leading-none text-gray-500 hover:text-white transition">
+                                &times;
+                            </button>
+
+                            <div class="absolute bottom-0 left-0 h-1 bg-red-500"
+                                 style="animation: progressBar 5s linear forwards;">
+                            </div>
+                        </div>
+                    {% elif message.tags == 'success' %}
+                        <div id="msg-{{ forloop.counter }}"
+                             class="relative flex items-center justify-between gap-4 p-5 rounded-2xl shadow-xl overflow-hidden
+                                    bg-gray-900/50 backdrop-blur-lg border border-green-600"
+                             style="min-width: 20rem;">
+
+                            <div class="flex items-start gap-4">
+                                <div class="text-green-400 flex-shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="max-w-lg text-gray-300 font-medium">{{ message }}</p>
+                            </div>
+
+                            <button onclick="this.closest('div').remove()" class="text-xl font-bold leading-none text-gray-500 hover:text-white transition">
+                                &times;
+                            </button>
+
+                            <div class="absolute bottom-0 left-0 h-1 bg-green-500"
+                                 style="animation: progressBar 5s linear forwards;">
+                            </div>
+                        </div>
+                    {% else %}
+                        <div id="msg-{{ forloop.counter }}"
+                             class="relative flex items-center justify-between gap-4 p-5 rounded-2xl shadow-xl overflow-hidden
+                                    bg-gray-900/50 backdrop-blur-lg border border-blue-600"
+                             style="min-width: 20rem;">
+
+                            <div class="flex items-start gap-4">
+                                <div class="text-blue-400 flex-shrink-0">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="max-w-lg text-gray-300 font-medium">{{ message }}</p>
+                            </div>
+
+                            <button onclick="this.closest('div').remove()" class="text-xl font-bold leading-none text-gray-500 hover:text-white transition">
+                                &times;
+                            </button>
+
+                            <div class="absolute bottom-0 left-0 h-1 bg-blue-500"
+                                 style="animation: progressBar 5s linear forwards;">
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
             {% endfor %}
         </div>
     {% endif %}
+
 
     <main class="flex-grow">
         {% block content %}
