@@ -32,29 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.error('Error:', error);
         });
     });
-    // Stop rerenders on Pagination   
-    // function setupPaginationLinks() {
-    //     document.querySelectorAll('.ajax-page-link').forEach(link => {
-    //         link.addEventListener('click', function (e) {
-    //             e.preventDefault();
-    //             const url = this.href;
-
-    //             fetch(url, {
-    //                 headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    //             })
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 document.querySelector('#productList').innerHTML = data.html;
-    //                 console.log("Pagination content loaded via AJAX");
-    //                 history.pushState(null, '', url); 
-    //                 setupPaginationLinks();
-    //             });
-    //         });
-    //     });
-    // }
-
-    // setupPaginationLinks();
-
 
     // Go On Top Button
     const scrollBtn = document.createElement("button");
@@ -67,34 +44,9 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
     });
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add("animate-fade-in");
-                observer.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.15 });
+//  Stop ReRenders on pagination
 
-    function observeCards() {
-        document.querySelectorAll("#productList .grid > div").forEach(card => {
-            observer.observe(card);
-        });
-    }
 
-    observeCards(); // on initial load
-
-    const productList = document.getElementById('productList');
-    const originalUpdate = productList.innerHTML;
-
-    const observerMutation = new MutationObserver(() => {
-        observeCards(); 
-    });
-
-    observerMutation.observe(productList, {
-        childList: true,
-        subtree: true
-    });
 });
 
 

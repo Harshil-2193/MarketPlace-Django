@@ -1,15 +1,13 @@
-from urllib import request
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render, HttpResponse, redirect
 from .forms import *
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import login,logout,authenticate
+from django.contrib.auth import login,logout
 from django.db import transaction
 import logging
 from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
 from django.core.exceptions import ObjectDoesNotExist
-import time
 from django.db import connection,reset_queries
 from django.http import JsonResponse
 from django.template.loader import render_to_string
@@ -115,19 +113,18 @@ def logout_view(request):
 
 #Dashboard
 def portal(request):
-    reset_queries()
-    # start = time.time()
-
     try:
+        selected_brand = request.GET.get('brand')
+        brands = Brand.objects.select_related('owner').all()
         products = Product.objects.select_related('brand','owner').filter(status = "True").order_by('-product_id')
+        
+        if selected_brand:
+            products = products.filter(brand__brand_name=selected_brand)
+
         if not products.exists():
             messages.info(request, "You have no Products yet.")
             return redirect('portal')
         
-        # for p in products:
-        #     _ = p.brand.brand_name
-        #     _ = p.owner.user.email
-
         # Pagination
         page = request.GET.get('page', 1)
         paginator = Paginator(products,6)
@@ -139,19 +136,11 @@ def portal(request):
         except EmptyPage:
             paginated_products = paginator.page(paginator.num_pages)
 
-    
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    
-    # end = time.time()
-    # print("Time Taken: ", end - start)
-    # print ("Queries: ", len(connection.queries))
-    # for q in connection.queries:
-    #     # print(q['sql']) 
-    return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
-
+        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 #Product
 @login_required(login_url='login_page')
@@ -559,3 +548,4 @@ def search_my_products_view(request):
         logger.exception(f"Error while searching my products: {e}")
         messages.error(request,"Something went wrong while searching your products.")
         return redirect('my_products_page')
+
