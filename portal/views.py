@@ -139,8 +139,8 @@ def portal(request):
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 #Product
 @login_required(login_url='login_page')
@@ -180,17 +180,18 @@ def create_product_view(request):
 @login_required(login_url='login_page')
 def my_products_view(request):
     try:
+        selected_brand = request.GET.get('brand')
         user_profile = UserProfile.objects.get(user=request.user)
         
-        reset_queries()
-        # start = time.time()
-
         if user_profile.role != 'seller':
             messages.error(request, "Only sellers can view their products.")
             return redirect('portal')
         
+        brands = Brand.objects.select_related('owner').filter()
         products = Product.objects.select_related('brand','owner__user').filter(owner=user_profile).order_by('-product_id')
         
+        if selected_brand:
+            products = products.filter(brand__brand_name=selected_brand)
         page = request.GET.get('page',1)
         paginator = Paginator(products, 6)
 
@@ -200,26 +201,12 @@ def my_products_view(request):
             paginated_products = paginator.page(1)
         except EmptyPage:
             paginated_products = paginator.page(paginator.num_pages)
-        # for p in products:
-        #     print(p.brand.brand_name)  # accesses foreign key
-        #     print(p.owner.user.email)  # nested foreign key
-
+       
         if not products.exists():
             messages.info(request, "You have no products yet.")
             return redirect('portal')
 
-        # end = time.time()
-        # print("Time Taken My: ", end - start)
-        # print ("Queries My: ", len(connection.queries))
-        # from django.http import JsonResponse
-        # after products query and prints
-        # if request.GET.get('debug') == '1':
-        #     return JsonResponse({
-        #         "products_count": products.count(),
-        #         "queries": connection.queries,
-        #         "time_taken": end - start
-        #     })
-        return render(request, 'portal/dashboard.html', {'products': paginated_products,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
+        return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'selected_brand': selected_brand,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")

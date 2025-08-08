@@ -14,39 +14,39 @@
         
         <h1 class="text-2xl font-bold text-center text-black dark:text-white mb-6 tracking-wide">{{heading}}</h1>
         
-        <div class="mb-6 mt-4">
-    <form method="get" action="{% url 'portal' %}" class="flex flex-col md:flex-row items-center gap-4">
+        
+        
+            <div class="mb-6 mt-4">
+                <form method="get" {% if show_actions %}action="{% url 'my_products_page' %}" {% else %}action="{% url 'portal' %}" {% endif %}  class="flex flex-col md:flex-row items-center gap-4">
+                    
+                    <input type="text" id="searchBox" name="search"
+                    placeholder="Search Products..."
+                    value="{{ request.GET.search }}"
+                    class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white">
 
-        <input type="text" id="searchBox" name="search"
-            placeholder="Search Products..."
-            value="{{ request.GET.search }}"
-            class="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
-                   focus:outline-none focus:ring-2 focus:ring-blue-500 
-                   dark:bg-gray-800 dark:text-white">
-
-        <div class="flex items-center gap-2">
-            <select name="brand" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">All Brands</option>
-                {% for brand in brands %}
-                    <option value="{{ brand.brand_name }}" {% if brand.brand_name == selected_brand %}selected{% endif %}>
-                        {{ brand.brand_name }}
-                    </option>
-                {% endfor %}
-            </select>
-
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                Filter
-            </button>
-
-            {% if selected_brand or request.GET.search %}
-                <a href="{% url 'portal' %}" class="text-sm text-blue-500 underline">
-                    Clear
-                </a>
-            {% endif %}
-        </div>
-
-    </form>
-</div>
+                    <div class="flex items-center gap-2">    
+                        <select name="brand" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="">Brands</option>
+                            {% for brand in brands %}
+                            <option value="{{ brand.brand_name }}" {% if brand.brand_name == selected_brand %}selected{% endif %}>
+                                {{ brand.brand_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                            Filter
+                        </button>
+                        
+                        {% if selected_brand or request.GET.search %}
+                        <a href="{% url 'my_products_page' %}" class="text-sm text-blue-500 underline">
+                            Clear
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                </form>
+            </div>
 
 
         <div id="productList">
@@ -109,19 +109,32 @@
             {% if products.has_other_pages %}
                 <div class="mt-8 flex justify-center items-center space-x-2">
                     {% if products.has_previous %}
-                        <a href="?page=1" class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">First</a>
-                        <a href="?page={{ products.previous_page_number }}" class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">Previous</a>
+                        <a href="?page=1{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                        class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">
+                            First
+                        </a>
+                        <a href="?page={{ products.previous_page_number }}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                        class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">
+                            Previous
+                        </a>
                     {% endif %}
-
-                    <span class="px-4 py-2 bg-gray-700 text-white rounded text-sm">Page {{ products.number }} of {{ products.paginator.num_pages }}</span>
-
+                    <span class="px-4 py-2 bg-gray-700 text-white rounded text-sm">
+                        Page {{ products.number }} of {{ products.paginator.num_pages }}
+                    </span>
                     {% if products.has_next %}
-                        <a href="?page={{ products.next_page_number }}" class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">Next</a>
-                        <a href="?page={{ products.paginator.num_pages }}" class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">Last</a>
+                        <a href="?page={{ products.next_page_number }}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                        class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">
+                            Next
+                        </a>
+                        <a href="?page={{ products.paginator.num_pages }}{% if selected_brand %}&brand={{ selected_brand }}{% endif %}" 
+                        class="ajax-page-link px-3 py-2 bg-gray-800 text-white rounded hover:bg-gray-700 text-sm">
+                            Last
+                        </a>
                     {% endif %}
                 </div>
             {% endif %}
         {% endif %}
+
     </section>
 </div>
 
