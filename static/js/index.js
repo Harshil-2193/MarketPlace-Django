@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })
     .then(response => response.json())
     .then(data => {
+        
         document.getElementById('productList').innerHTML = data.html;
 
         const pagination = document.getElementById('paginationContainer')

@@ -140,8 +140,8 @@ def portal(request):
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'source': 'portal','total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+    return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'portal','brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 #Product
 @login_required(login_url='login_page')
@@ -207,7 +207,7 @@ def my_products_view(request):
             messages.info(request, "You have no products yet.")
             return redirect('portal')
 
-        return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'selected_brand': selected_brand,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
+        return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'my_products','brands':brands,'selected_brand': selected_brand,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
         messages.error(request, "User profile not found.")
@@ -269,12 +269,15 @@ def delete_product_view(request, product_id):
 
 def product_details_view(request, product_id):
     try:
+        source = request.GET.get('source','')
+        show_actions = source.lower()=="my_products"  
+        print("Shown Actions: ******************: ", show_actions,": ", source)
         product = get_object_or_404(Product, product_id=product_id)
         if not product.status:
             messages.error(request, "This product is not available.")
             return redirect('my_products_page')
         from_my_products = request.GET.get('from') == 'my_products' or 'my_products' in request.META.get('HTTP_REFERER', '')
-        return render(request, 'portal/product_details.html', {'product': product, 'title': 'Product Details', 'heading': 'Product Details'})
+        return render(request, 'portal/product_details.html', {'product': product,'show_actions':show_actions, 'title': 'Product Details', 'heading': 'Product Details'})
     except ObjectDoesNotExist:
         messages.error(request, "Product not found.")
         return redirect('portal')

@@ -62,13 +62,12 @@
             <div class="grid gap-10 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [grid-auto-rows:1fr]">
                 {% for product in products %}
                 <div class="bg-gray-900/60 backdrop-blur-md border-2 border-gray-800 rounded-[2.5rem] shadow-[0_10px_30px_rgba(0,0,0,0.5)] overflow-hidden group hover:shadow-purple-500/30 transition-all duration-700 transform hover:-translate-y-3 flex flex-col justify-between h-full">
-                    <a href="{% url 'product_details_page' product.product_id %}" class="block">
+                    <a href="{% url 'product_details_page' product.product_id %}?source={{source}}" class="block">
                         <div class="relative overflow-hidden">
                             <img src="{{ product.image.url }}" alt="{{ product.product_name }}" class="w-full h-64 object-cover rounded-t-[2.5rem] transition-transform duration-700 group-hover:scale-110">
                             <div class="absolute inset-0 bg-gradient-to-t from-gray-950/80 to-transparent"></div>
                         </div>
                     </a>
-                    
                     <div class="p-8 flex flex-col justify-between flex-grow">
                         <div>
                             <a href="{% url 'product_details_page' product.product_id %}" class="block">

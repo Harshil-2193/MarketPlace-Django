@@ -23,7 +23,7 @@
                 <p><span class="font-bold text-gray-200">Size:</span> {{ product.height_cm }}cm x {{ product.width_cm }}cm</p>
             </div>
             
-            {% if role == 'seller' %}
+            {% if role == 'seller' and show_actions %}
             <div class="flex flex-col sm:flex-row justify-between gap-6">
                 <a href="{% url 'edit_product_page' product.product_id %}" 
                     class="flex-1 text-center font-bold text-lg px-8 py-4 rounded-full transition-all duration-300 transform hover:scale-105 shadow-lg
