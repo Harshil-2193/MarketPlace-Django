@@ -187,7 +187,7 @@ def my_products_view(request):
             messages.error(request, "Only sellers can view their products.")
             return redirect('portal')
         
-        brands = Brand.objects.select_related('owner').filter()
+        brands = Brand.objects.select_related('owner').filter(owner=user_profile)
         products = Product.objects.select_related('brand','owner__user').filter(owner=user_profile).order_by('-product_id')
         
         if selected_brand:

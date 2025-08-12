@@ -128,7 +128,7 @@ class ProductForm(forms.ModelForm):
                 'style':'resize:none;',
                 'rows':4,
                 'cols':40
-            })
+            }),
         }
     def __init__(self, *args, **kwargs):
         user_profile = kwargs.pop('user_profile', None)
@@ -142,7 +142,12 @@ class ProductForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.all()
 
         if kwargs.get('instance'):
+            instance = kwargs['instance']
+            self.fields['brand'].queryset = Brand.objects.filter(pk=instance.brand.pk)
             self.fields['brand'].disabled = True
+            self.fields['brand'].widget.attrs.update({
+                'style': 'opacity: 0.9; cursor: not-allowed;  color: #888;'
+            })
         
     def clean(self):
         cleaned_data = super().clean()
