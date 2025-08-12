@@ -70,7 +70,7 @@ TEMPLATES = [
 
 AUTHENTICATION_BACKENDS = [
     'portal.backend.EmailOrUsernameBackend',
-    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.ModelBackend', #For Fall back
 
 ]
 

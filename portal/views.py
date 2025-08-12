@@ -125,12 +125,12 @@ def portal(request):
             messages.info(request, "You have no Products yet.")
             return redirect('portal')
         
-        # Pagination
-        page = request.GET.get('page', 1)
-        paginator = Paginator(products,8)
-
         try:
+            # Pagination
+            page = request.GET.get('page', 1)
+            paginator = Paginator(products,8)
             paginated_products = paginator.page(page)
+           
         except PageNotAnInteger:
             paginated_products = paginator.page(1)
         except EmptyPage:
@@ -272,6 +272,7 @@ def product_details_view(request, product_id):
         if not product.status:
             messages.error(request, "This product is not available.")
             return redirect('my_products_page')
+        from_my_products = request.GET.get('from') == 'my_products' or 'my_products' in request.META.get('HTTP_REFERER', '')
         return render(request, 'portal/product_details.html', {'product': product, 'title': 'Product Details', 'heading': 'Product Details'})
     except ObjectDoesNotExist:
         messages.error(request, "Product not found.")
@@ -520,11 +521,13 @@ def search_my_products_view(request):
     try:
         query = request.GET.get('q','').strip()
         user_profile = UserProfile.objects.filter(user=request.user).first()
-
         if query:
             products = Product.objects.select_related('brand','owner').filter(
-                Q(product_name__icontains=query) | Q(product_name__istartswith=query | Q(sku__icontains=query)),
+                Q(product_name__icontains=query) |
+                Q(product_name__istartswith=query) |
+                Q(sku__icontains=query)
             ).filter(owner=user_profile)
+
         else:
             products = Product.objects.select_related('brand','owner').filter(owner=user_profile)
 

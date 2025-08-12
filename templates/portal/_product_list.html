@@ -1,6 +1,6 @@
 <div class="grid gap-8 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     {% for product in products %}
-        <a href="{% url 'product_details_page' product.product_id %}" class="block hover:no-underline">
+        <a href="{% url 'product_details_page' product.product_id %}" class="block hover:no-underline product-card">
             <div class="bg-gray-900/50 backdrop-blur-lg border-2 border-gray-800 rounded-[2.5rem] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] p-8 
                         transform transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_70px_rgba(8,_112,_184,_0.9)]">
                 
