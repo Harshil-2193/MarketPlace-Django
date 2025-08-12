@@ -132,7 +132,7 @@
             </div>
         </div>
 
-        <div id="paginationContainer">
+        <div id="paginationContainer" style="{% if total_count <= 6 %}display:none;{% endif %}">
             {% if products.paginator.count > 6 %}
                 {% if products.has_other_pages %}
                    <div class="mt-16 flex flex-wrap justify-center items-center space-x-3 sm:space-x-4">

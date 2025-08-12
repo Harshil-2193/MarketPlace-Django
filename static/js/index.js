@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
     .then(response => response.json())
     .then(data => {
         document.getElementById('productList').innerHTML = data.html;
+
+        const pagination = document.getElementById('paginationContainer')
+        if(pagination)
+            if (data.total_count<=8)
+                pagination.style.display = 'none';
+            else
+                pagination.style.display = 'flex';
     })
     .catch(error => {
         console.error('Error:', error);

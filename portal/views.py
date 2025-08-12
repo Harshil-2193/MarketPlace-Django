@@ -125,6 +125,7 @@ def portal(request):
             messages.info(request, "You have no Products yet.")
             return redirect('portal')
         
+        total_count = products.count() 
         try:
             # Pagination
             page = request.GET.get('page', 1)
@@ -134,13 +135,13 @@ def portal(request):
         except PageNotAnInteger:
             paginated_products = paginator.page(1)
         except EmptyPage:
-            paginated_products = paginator.page(paginator.num_pages)
+            paginated_products = paginator.page(paginator.num_pages)    
 
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
-    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+    return render(request, 'portal/dashboard.html', {'products': paginated_products,'brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 #Product
 @login_required(login_url='login_page')
