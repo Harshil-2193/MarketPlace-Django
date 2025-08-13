@@ -270,13 +270,12 @@ def delete_product_view(request, product_id):
 def product_details_view(request, product_id):
     try:
         source = request.GET.get('source','')
-        show_actions = source.lower()=="my_products"  
+        show_actions = source.lower()=="my_products"
         print("Shown Actions: ******************: ", show_actions,": ", source)
         product = get_object_or_404(Product, product_id=product_id)
         if not product.status:
             messages.error(request, "This product is not available.")
             return redirect('my_products_page')
-        from_my_products = request.GET.get('from') == 'my_products' or 'my_products' in request.META.get('HTTP_REFERER', '')
         return render(request, 'portal/product_details.html', {'product': product,'show_actions':show_actions, 'title': 'Product Details', 'heading': 'Product Details'})
     except ObjectDoesNotExist:
         messages.error(request, "Product not found.")
@@ -504,18 +503,21 @@ def edit_profile_view(request):
 def search_products_view(request):
     try:
         query = request.GET.get('q', '').strip()
+        page = request.GET.get('page', 1)
         if query:
-            logger.info(f"Search Query: {query}")
             products = Product.objects.select_related('brand','owner').filter(
-                # product_name__icontais = query,
-                # product_name__istartswith=query,
                 Q(Q(product_name__icontains=query) | Q(product_name__istartswith=query)|Q(sku__icontains=query)),
                 status=True
             ).order_by('-product_id')
         else:
             products = Product.objects.select_related('brand', 'owner').filter(status=True).order_by('-product_id')
-        html = render_to_string('portal/_product_list.html',{'products':products})
-        return JsonResponse({'html': html})
+        
+        paginator = Paginator(products,8)
+        page_obj = paginator.get_page(page)
+        
+        html = render_to_string('portal/_product_list.html',{'products':page_obj})
+        pagination_html  = render_to_string('portal/_pagination.html',{'products':page_obj}) if paginator.count > 8 else ""
+        return JsonResponse({'html': html,'pagination_html':pagination_html, 'total_count':paginator.count})
     except Exception as e:
        logger.exception(f"Error while searching products; {e}")
        messages.error(request, "Something went wrong while searching products.")

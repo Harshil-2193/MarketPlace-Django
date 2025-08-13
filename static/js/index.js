@@ -1,5 +1,3 @@
-
-console.log("Js Loaded")
 function toggleDescription(id) {
     const desc = document.getElementById(`desc-${id}`);
     const btn = event.target;
@@ -11,36 +9,67 @@ function toggleDescription(id) {
 document.addEventListener('DOMContentLoaded', function () {
     const searchBox = document.getElementById('searchBox'); 
     searchBox.addEventListener('keyup', function (event) {
-    event.preventDefault(); // Stop the form from submitting
-    const query = searchBox.value;
-    const currentPath = window.location.pathname.toLowerCase();   
-    let endpoint = '';
-    if (currentPath.includes('my_products')) {
-        endpoint = `/my_products/search/?q=${query}`;
-    } else {
-        endpoint = `/search/?q=${query}`;
-    }
-    fetch(endpoint, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
+        event.preventDefault(); // Stop the form from submitting
+        const query = searchBox.value;
+        const currentPath = window.location.pathname.toLowerCase();   
+        let endpoint = currentPath.includes('my_products')
+            ?  `/my_products/search/?q=${query}`
+            :  `/search/?q=${query}`;
         
-        document.getElementById('productList').innerHTML = data.html;
+        fetch(endpoint, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('productList').innerHTML = data.html;
 
-        const pagination = document.getElementById('paginationContainer')
-        if(pagination)
-            if (data.total_count<=8)
-                pagination.style.display = 'none';
-            else
-                pagination.style.display = 'flex';
-    })
-    .catch(error => {
-        console.error('Error:', error);
+            const pagination = document.getElementById('paginationContainer')
+            if(pagination)
+                if (data.pagination_html){
+                    paginationContainer.innerHTML = data.pagination_html;
+                    paginationContainer.style.display = 'block';
+                }
+                else{
+                    paginationContainer.innerHTML = '';
+                    paginationContainer.style.display = 'none'
+                }
+
+                 bindAjaxPageLinks();       
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
     });
-});
+
+    const bindAjaxPageLinks = ()=>{
+        document.querySelectorAll('.ajax-page-link').forEach(link => {
+            link.addEventListener('click', (e)=>{
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                fetch(url,{
+                    headers:{
+                        'X-Requested-With':'XMLHttpRequest'
+                    }
+                })
+                .then(response=>response.json())
+                .then(data=>{
+                    document.getElementById('productList').innerHTML = data.html;
+                    if (data.pagination_html) {
+                        paginationContainer.innerHTML = data.pagination_html;
+                        paginationContainer.style.display = 'block';
+                    } else {
+                        paginationContainer.innerHTML = '';
+                        paginationContainer.style.display = 'none';
+                    }
+
+                    bindAjaxPageLinks();
+                });
+            });
+        });
+        
+    }
 
     // Go On Top Button
     const scrollBtn = document.createElement("button");
@@ -53,6 +82,10 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
     });
 
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    bindAjaxPageLinks();
 });
 
 
