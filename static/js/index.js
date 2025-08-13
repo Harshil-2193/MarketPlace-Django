@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('productList').innerHTML = data.html;
 
             const pagination = document.getElementById('paginationContainer')
+            // Forr Key up
             if(pagination)
                 if (data.pagination_html){
                     paginationContainer.innerHTML = data.pagination_html;
@@ -56,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(response=>response.json())
                 .then(data=>{
                     document.getElementById('productList').innerHTML = data.html;
+                    // for click on links
                     if (data.pagination_html) {
                         paginationContainer.innerHTML = data.pagination_html;
                         paginationContainer.style.display = 'block';
