@@ -116,7 +116,7 @@ def portal(request):
     try:
         selected_brand = request.GET.get('brand')
         brands = Brand.objects.select_related('owner').all()
-        products = Product.objects.select_related('brand','owner').filter(status = "True").order_by('-product_id')
+        products = Product.objects.select_related('brand','owner').filter(status=True).order_by('-product_id')
         
         if selected_brand:
             products = products.filter(brand__brand_name=selected_brand)

@@ -9,7 +9,7 @@ urlpatterns = [
     path('', views.portal, name='portal'),
     path('my_products/', views.my_products_view, name="my_products_page"),
     path('create_product/', views.create_product_view, name="create_product_page"),
-    path('product_edit/<int:product_id>/', views.edit_product_view, name="edit_product_page"),
+    path('product_edit/<int:product_id>/', views.edit_product_view, name="edit_product_page"),      
     path('product_delete/<int:product_id>/', views.delete_product_view, name="delete_product_page"),
     path('product_details/<int:product_id>/', views.product_details_view, name="product_details_page"),
     
