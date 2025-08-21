@@ -21,6 +21,7 @@ urlpatterns = [
     path('brand_products/<str:brand_name>/', views.brand_products_view, name="brand_products_page"),
     
     path('create_category/', views.create_category_view, name="create_category_page"),
+    #   path("category-autocomplete/", CategoryAutocomplete.as_view(), name="category-autocomplete"),
     
     path('view_profile/', views.view_profile_view, name="view_profile_page"),
     path('edit_profile/', views.edit_profile_view, name="edit_profile_page"),

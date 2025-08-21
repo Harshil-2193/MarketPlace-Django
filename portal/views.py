@@ -13,6 +13,7 @@ from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.db.models import Q
 from .models import *
+
 logger = logging.getLogger(__name__)
 
 def get_userRole(request):
@@ -123,15 +124,14 @@ def portal(request):
 
         if not products.exists():
             messages.info(request, "You have no Products yet.")
-            return redirect('portal')
-        
+            return render(request, 'portal/dashboard.html', {'products': [],'brands': brands,'source': 'portal','total_count': 0,'selected_brand': selected_brand,'title': 'Dashboard','heading': 'Products','show_actions': False,'role': get_userRole(request),
+    })
         total_count = products.count() 
         try:
             # Pagination
             page = request.GET.get('page', 1)
             paginator = Paginator(products,8)
             paginated_products = paginator.page(page)
-           
         except PageNotAnInteger:
             paginated_products = paginator.page(1)
         except EmptyPage:
@@ -140,7 +140,7 @@ def portal(request):
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
         messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'source': 'portal','total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': 'Something went wrong while fetching products.'})
+        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'source': 'portal','total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': str(e)})
     return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'portal','brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
 
 #Product
@@ -458,6 +458,8 @@ def create_category_view(request):
         form = CategoryForm()
     return render(request, 'portal/create_category.html', {'categoryForm': form})
 
+
+
 #Profile
 @login_required(login_url='login_page')    
 def view_profile_view(request):
@@ -533,7 +535,6 @@ def search_my_products_view(request):
                 Q(product_name__istartswith=query) |
                 Q(sku__icontains=query)
             ).filter(owner=user_profile)
-
         else:
             products = Product.objects.select_related('brand','owner').filter(owner=user_profile)
 

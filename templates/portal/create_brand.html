@@ -4,34 +4,43 @@
 {% block title %}{{ title }}{% endblock title %}
 
 {% block content %}
-<div class="bg-gradient-to-br from-gray-950 to-black min-h-screen flex items-center justify-center py-20 px-6 sm:px-8 lg:px-12 font-sans antialiased">
-    <div class="w-full max-w-xl bg-gray-900/50 backdrop-blur-lg border-2 border-gray-800 rounded-[3rem] shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] p-12">
-        <header class="text-center mb-12">
-            <h2 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-gray-200 via-gray-50 to-gray-200 tracking-tighter drop-shadow-lg">
+<div class="bg-gradient-to-br from-gray-900 to-gray-800 min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 font-sans antialiased">
+    <div class="w-full max-w-xl bg-gray-800/50 border border-gray-700 rounded-xl shadow-xl p-8">
+        <!-- Header Section -->
+        <header class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 mb-4 bg-gray-700 rounded-full shadow-lg">
+                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-bold text-white tracking-tight mb-3">
                 {{ heading }}
             </h2>
-            <p class="mt-4 text-lg text-gray-400">
+            <p class="text-gray-400">
                 Provide the details to {{ heading|lower }}.
             </p>
         </header>
 
-        <form method="post" class="space-y-8">
+        <!-- Form Section -->
+        <form method="post" class="space-y-6">
             {% csrf_token %}
 
             {% for field in brand %}
                 <div class="field-group">
-                    <label for="{{ field.id_for_label }}" class="block mb-3 text-gray-300 font-semibold text-lg">{{ field.label }}</label>
-                    {{ field|add_class:'w-full px-6 py-4 rounded-full border-2 border-gray-700 bg-gray-800/60 text-gray-50 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all duration-300 shadow-inner' }}
+                    <label for="{{ field.id_for_label }}" class="block mb-2 text-gray-300 font-medium text-sm">
+                        {{ field.label }}
+                    </label>
+                    {{ field|add_class:'w-full px-4 py-3 rounded-lg border border-gray-600 bg-gray-700/50 text-white placeholder-gray-400 focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500/20 transition-all duration-300' }}
 
                     {% if field.errors %}
-                        <p class="text-sm text-red-500 mt-2 ml-4 font-medium">{{ field.errors.0 }}</p>
+                        <p class="text-sm text-red-400 mt-2 font-medium">{{ field.errors.0 }}</p>
                     {% endif %}
                 </div>
             {% endfor %}
 
-            <div class="pt-8">
-                <button type="submit" class="w-full font-bold text-lg px-8 py-4 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-950
-                       bg-gradient-to-r from-purple-600 to-blue-500 text-white hover:from-purple-700 hover:to-blue-600 focus:ring-blue-500">
+            <!-- Submit Button -->
+            <div class="pt-6">
+                <button type="submit" class="w-full bg-gray-700 hover:bg-gray-600 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-gray-500/30">
                     {{ heading }}
                 </button>
             </div>

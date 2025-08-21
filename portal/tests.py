@@ -143,13 +143,15 @@ class PortalViewTests(TestCase):
          
 
     def test_view_handles_database_errors(self):
-        
-        with patch('portal.models.Product.objects.filter',side_effect=Exception('DB error')):
+        with patch('portal.views.Product.objects.filter', side_effect=Exception('DB error')):
             response = self.client.get(reverse('portal'))
 
         self.assertEqual(response.status_code, 200)
-        self.assertIn('error',response.context)
-        self.assertIn('Db error', response.context['error'])
+        self.assertIn('error', response.context)
+        self.assertEqual(response.context['error'], 'Something went wrong while fetching products.')
+
+        messages = list(get_messages(response.wsgi_request))
+        self.assertEqual(str(messages[0]), 'Something went wrong while fetching products.')
 
     # Context Data test
     def test_context_contains_brands(self):

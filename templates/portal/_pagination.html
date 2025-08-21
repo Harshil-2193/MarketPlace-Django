@@ -1,26 +1,43 @@
 {% if products.has_other_pages %}
-<div class="mt-16 flex flex-wrap justify-center items-center space-x-3 sm:space-x-4">
+<div class="mt-16 flex flex-wrap justify-center items-center gap-3">
     {% if products.has_previous %}
     <a href="?page=1" 
-        class="ajax-page-link px-5 py-3 bg-gray-800/70 text-purple-400 rounded-full hover:bg-gray-700 transition-all duration-300 text-base font-semibold shadow-md">
+        class="ajax-page-link inline-flex items-center px-5 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-300 text-sm font-medium">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"></path>
+        </svg>
         First
     </a>
     <a href="?page={{ products.previous_page_number }}" 
-        class="ajax-page-link px-5 py-3 bg-gray-800/70 text-purple-400 rounded-full hover:bg-gray-700 transition-all duration-300 text-base font-semibold shadow-md">
+        class="ajax-page-link inline-flex items-center px-5 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-300 text-sm font-medium">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
         Previous
     </a>
     {% endif %}
-    <span class="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-500 text-white rounded-full text-base font-bold shadow-xl">
+    
+    <span class="inline-flex items-center px-6 py-3 bg-gray-700 text-white rounded-lg text-sm font-medium">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
         Page {{ products.number }} of {{ products.paginator.num_pages }}
     </span>
+    
     {% if products.has_next %}
     <a href="?page={{ products.next_page_number }}" 
-        class="ajax-page-link px-5 py-3 bg-gray-800/70 text-purple-400 rounded-full hover:bg-gray-700 transition-all duration-300 text-base font-semibold shadow-md">
+        class="ajax-page-link inline-flex items-center px-5 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-300 text-sm font-medium">
         Next
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
     </a>
     <a href="?page={{ products.paginator.num_pages }}" 
-        class="ajax-page-link px-5 py-3 bg-gray-800/70 text-purple-400 rounded-full hover:bg-gray-700 transition-all duration-300 text-base font-semibold shadow-md">
+        class="ajax-page-link inline-flex items-center px-5 py-3 bg-gray-700 hover:bg-gray-600 text-gray-200 rounded-lg transition-all duration-300 text-sm font-medium">
         Last
+        <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 19l7-7-7-7m-7 14l7-7-7-7"></path>
+        </svg>
     </a>
     {% endif %}
 </div>

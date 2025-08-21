@@ -7,15 +7,16 @@ function toggleDescription(id) {
 
 // Stop rerenders on search
 document.addEventListener('DOMContentLoaded', function () {
+
     const searchBox = document.getElementById('searchBox'); 
     searchBox.addEventListener('keyup', function (event) {
-        event.preventDefault(); // Stop the form from submitting
+        event.preventDefault();
         const query = searchBox.value;
-        const currentPath = window.location.pathname.toLowerCase();   
+        const currentPath = window.location.pathname.toLowerCase();
         let endpoint = currentPath.includes('my_products')
             ?  `/my_products/search/?q=${query}`
             :  `/search/?q=${query}`;
-        
+
         fetch(endpoint, {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -36,8 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     paginationContainer.innerHTML = '';
                     paginationContainer.style.display = 'none'
                 }
-
-                 bindAjaxPageLinks();       
+                bindAjaxPageLinks();
         })
         .catch(error => {
             console.error('Error:', error);
@@ -70,7 +70,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 });
             });
         });
-        
     }
 
     // Go On Top Button
