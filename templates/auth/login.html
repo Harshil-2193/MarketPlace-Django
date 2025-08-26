@@ -2,7 +2,7 @@
 {% load form_filters %}
 
 {% block title %}Login{% endblock %}
-
+<div id="mainContent">
 {% block content %}
     <div class="min-h-screen flex flex-col items-center pt-8" style="background: #f6f6f6;">
         <div class="w-full flex flex-col items-center mt-0">
@@ -20,7 +20,7 @@
                             </div>
                         {% endfor %}
                     {% endif %}
-                    <form method="post" class="space-y-3">
+                    <form method="post"  id="loginForm" class="space-y-3">
                         {% csrf_token %}
 
                         <div class="relative">
@@ -78,3 +78,4 @@
         })();
     </script>
 {% endblock content %}
+</div>

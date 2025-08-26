@@ -56,7 +56,7 @@ def login_view(request):
         form = LoginForm()
         
     return render(request, 'auth/login.html', {'loginForm' : form})
-
+ 
 def register_view(request):
     if request.user.is_authenticated:
         messages.info(request, "You are already logged in.")
@@ -324,37 +324,103 @@ def create_brand_view(request):
 def all_brands_view(request):
     try:
         from portal.models import Brand
-        for b in Brand.objects.all():
-            print(b.brand_name, b.owner.role)
-
         brands = Brand.objects.all()
-        # paginator = Paginator(brands,3)
-        # page = request.GET.get('page')
-        # brands = paginator.get_page(page)
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'title': 'Brands','heading': 'Brands','show_actions': False})
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/partials/brands_list.html', {
+                'brands': brands,
+                'is_my': False,
+                'show_actions': False
+            })
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'heading': 'All Brands',
+                'show_actions': False
+            })
+        else:
+            # Regular request
+            return render(request, 'portal/all_brands.html', {
+                'brands': brands, 
+                'title': 'Brands',
+                'heading': 'Brands',
+                'show_actions': False
+            })
     except Exception as e:
         logger.error(f"Error in All_Brands_View: {str(e)}")
-        return render(request, 'portal/all_brands.html', {'brands': [], 'error': 'Something went wrong while fetching brands.'})
-
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching brands.'
+            })
+        else:
+            return render(request, 'portal/all_brands.html', {
+                'brands': [], 
+                'error': 'Something went wrong while fetching brands.'
+            })
 @login_required(login_url='login_page')
 def my_brands_view(request):
     try:
-        user_profile = UserProfile.objects.filter(user = request.user).first()
+        user_profile = UserProfile.objects.filter(user=request.user).first()
         if user_profile.role != 'seller':
-            messages.error(request, "Only sellers can view their brands.")
-            return redirect('portal')
-        brands= Brand.objects.filter(owner = user_profile)
-        if not brands.exists():
-            messages.info(request, "You have no brands yet.")
-            return redirect('portal')
-        return render(request, 'portal/all_brands.html', {'brands': brands, 'is_my':True, 'title': 'My Brands','heading': 'My Brands', 'show_actions': True})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Only sellers can view their brands.'
+                })
+            else:
+                messages.error(request, "Only sellers can view their brands.")
+                return redirect('portal')
+                
+        brands = Brand.objects.filter(owner=user_profile)
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/partials/brands_list.html', {
+                'brands': brands,
+                'is_my': True,
+                'show_actions': True
+            })
+            print("DOne")
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'heading': 'My Brands',
+                'show_actions': True
+            })
+        else:
+            # Regular request
+            if not brands.exists():
+                messages.info(request, "You have no brands yet.")
+                return redirect('portal')
+                
+            return render(request, 'portal/all_brands.html', {
+                'brands': brands, 
+                'is_my': True, 
+                'title': 'My Brands',
+                'heading': 'My Brands', 
+                'show_actions': True
+            })
     except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
     except Exception as e:
         logger.exception("Error fetching user's brands: %s", e)
-        messages.error(request, "Something went wrong while fetching your brands.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching your brands.'
+            })
+        else:
+            messages.error(request, "Something went wrong while fetching your brands.")
+            return redirect('portal')
     
 @login_required(login_url='login_page')
 def edit_brand_view(request, brand_name):

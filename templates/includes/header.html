@@ -25,10 +25,10 @@
                     <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
                 </a>
                 {% if request.user.is_authenticated and role == 'seller' %}
-                    <a href="{% url "my_brands_page" %}" class="relative transition font-medium text-base text-gray-300 group {% if request.resolver_match.url_name == 'my_brands_page' %}text-white after:scale-x-100{% else %}hover:text-white{% endif %}">
+                    {% comment %} <a href="{% url "my_brands_page" %}" class="relative transition font-medium text-base text-gray-300 group {% if request.resolver_match.url_name == 'my_brands_page' %}text-white after:scale-x-100{% else %}hover:text-white{% endif %}">
                         My Brands
                         <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
-                    </a>
+                    </a> {% endcomment %}
                     <a href="{% url "my_products_page" %}" class="relative transition font-medium text-base text-gray-300 group {% if request.resolver_match.url_name == 'my_products_page' %}text-white after:scale-x-100{% else %}hover:text-white{% endif %}">
                         My Products
                         <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
