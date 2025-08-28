@@ -6,9 +6,48 @@ function toggleDescription(id) {
 }
 
 // Stop rerenders on search
-document.addEventListener('DOMContentLoaded', function () {
+// Expose helper so we can rebind after AJAX loads
+function bindAjaxPageLinks() {
+    
+    const paginationContainer = document.getElementById('paginationContainer');
+    document.querySelectorAll('.ajax-page-link').forEach((link) => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            const url = this.getAttribute('href');
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    document.getElementById('productList').innerHTML = data.html;
+                    
+                    if (paginationContainer) {
+                        if (data.pagination_html) {
+                            paginationContainer.innerHTML = data.pagination_html;
+                            paginationContainer.style.display = 'block';
+                        } else {
+                            paginationContainer.innerHTML = '';
+                            paginationContainer.style.display = 'none';
+                        }
+                    }
+                    if (typeof window.ProductsPageInit === 'function') {
+                        window.ProductsPageInit();
+                    }
+                    bindAjaxPageLinks();
+                });
+        });
+    });
+}
 
-    const searchBox = document.getElementById('searchBox'); 
+function initProductsPage() {
+    const searchBox = document.getElementById('searchBox');
+    if (!searchBox) {
+        bindAjaxPageLinks();
+        return;
+    }
+
     searchBox.addEventListener('keyup', function (event) {
         event.preventDefault();
         const query = searchBox.value;
@@ -25,52 +64,22 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(response => response.json())
         .then(data => {
             document.getElementById('productList').innerHTML = data.html;
-
-            const pagination = document.getElementById('paginationContainer')
-            // Forr Key up
-            if(pagination)
-                if (data.pagination_html){
+            const paginationContainer = document.getElementById('paginationContainer');
+            if (paginationContainer) {
+                if (data.pagination_html) {
                     paginationContainer.innerHTML = data.pagination_html;
                     paginationContainer.style.display = 'block';
-                }
-                else{
+                } else {
                     paginationContainer.innerHTML = '';
-                    paginationContainer.style.display = 'none'
+                    paginationContainer.style.display = 'none';
                 }
-                bindAjaxPageLinks();
+            }
+            bindAjaxPageLinks();
         })
         .catch(error => {
             console.error('Error:', error);
         });
     });
-
-    const bindAjaxPageLinks = ()=>{
-        document.querySelectorAll('.ajax-page-link').forEach(link => {
-            link.addEventListener('click', (e)=>{
-                e.preventDefault();
-                const url = this.getAttribute('href');
-                fetch(url,{
-                    headers:{
-                        'X-Requested-With':'XMLHttpRequest'
-                    }
-                })
-                .then(response=>response.json())
-                .then(data=>{
-                    document.getElementById('productList').innerHTML = data.html;
-                    // for click on links
-                    if (data.pagination_html) {
-                        paginationContainer.innerHTML = data.pagination_html;
-                        paginationContainer.style.display = 'block';
-                    } else {
-                        paginationContainer.innerHTML = '';
-                        paginationContainer.style.display = 'none';
-                    }
-
-                    bindAjaxPageLinks();
-                });
-            });
-        });
-    }
 
     // Go On Top Button
     const scrollBtn = document.createElement("button");
@@ -83,12 +92,14 @@ document.addEventListener('DOMContentLoaded', function () {
         scrollBtn.style.display = window.scrollY > 200 ? "block" : "none";
     });
 
-});
-
-document.addEventListener('DOMContentLoaded', function() {
     bindAjaxPageLinks();
+}
 
-    
+// Expose globally for AJAX re-init
+window.ProductsPageInit = initProductsPage;
+
+document.addEventListener('DOMContentLoaded', function () {
+    initProductsPage();
 });
 
 

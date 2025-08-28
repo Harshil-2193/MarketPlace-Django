@@ -41,6 +41,10 @@
                         Create Brand
                         <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
                     </a>
+                    <a href="{% url "create_category_page" %}" class="relative transition font-medium text-base text-gray-300 group {% if request.resolver_match.url_name == 'create_category_page' %}text-white after:scale-x-100{% else %}hover:text-white{% endif %}">
+                        Create Category
+                        <span class="absolute -bottom-1 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
+                    </a>
                 {% endif %}
             </div>
 
@@ -88,6 +92,7 @@
             <a href="{% url "my_products_page" %}" class="block font-medium text-base text-gray-200 hover:text-white transition py-2">My Products</a>
             <a href="{% url "create_product_page" %}" class="block font-medium text-base text-gray-200 hover:text-white transition py-2">Register Product</a>
             <a href="{% url "create_brand_page" %}" class="block font-medium text-base text-gray-200 hover:text-white transition py-2">Create Brand</a>
+            <a href="{% url "create_category_page" %}" class="block font-medium text-base text-gray-200 hover:text-white transition py-2">Create Category</a>
         {% endif %}
         {% if request.user.is_authenticated %}
             <form action="{% url 'logout_page' %}" method="post">

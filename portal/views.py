@@ -123,9 +123,22 @@ def portal(request):
             products = products.filter(brand__brand_name=selected_brand)
 
         if not products.exists():
-            messages.info(request, "You have no Products yet.")
-            return render(request, 'portal/dashboard.html', {'products': [],'brands': brands,'source': 'portal','total_count': 0,'selected_brand': selected_brand,'title': 'Dashboard','heading': 'Products','show_actions': False,'role': get_userRole(request),
-    })
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # AJAX request
+                html = render_to_string('portal/_product_list.html', {
+                'products': paginated_products,
+                'brands': brands,
+                'source': 'portal',
+                'total_count': total_count,
+                'selected_brand': selected_brand,
+                'show_actions': False,
+                'role': get_userRole(request)
+            })
+                return JsonResponse({'success': True, 'html': html})
+            else:
+                messages.info(request, "You have no Products yet.")
+                return render(request, 'portal/dashboard.html', {'products': [],'brands': brands,'source': 'portal','total_count': 0,'selected_brand': selected_brand,'title': 'Dashboard','heading': 'Products','show_actions': False,'role': get_userRole(request)})
+        
         total_count = products.count() 
         try:
             # Pagination
@@ -137,11 +150,38 @@ def portal(request):
         except EmptyPage:
             paginated_products = paginator.page(paginator.num_pages)    
 
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/dashboard.html', {
+                'products': paginated_products,
+                'source': 'portal',
+                'brands': brands,
+                'total_count': total_count,
+                'selected_brand': selected_brand,
+                'title': 'Dashboard',
+                'heading': 'Products',
+                'show_actions': False,
+                'role': get_userRole(request)
+            })
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'Dashboard',
+                'heading': 'Products'
+            })
+        else:
+            return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'portal','brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+
     except Exception as e:
         logger.error(f"Error in Products View: {str(e)}")
-        messages.error(request, "Something went wrong while fetching products.")
-        return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'source': 'portal','total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': str(e)})
-    return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'portal','brands':brands,'total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products','show_actions':False, 'role':get_userRole(request)})
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching products.'
+            })
+        else:
+            messages.error(request, "Something went wrong while fetching products.")
+            return render(request, 'portal/dashboard.html', {'products': [],'brands':brands,'source': 'portal','total_count': total_count,'selected_brand': selected_brand,'title': 'Dashboard', 'heading': 'Products', 'error': str(e)})
 
 #Product
 @login_required(login_url='login_page')
@@ -156,8 +196,14 @@ def create_product_view(request):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
         if user_profile.role != 'seller':
-            messages.error(request, "Only sellers can create products.")
-            return redirect('portal')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Only sellers can create products.'
+                })
+            else:
+                messages.error(request, "Only sellers can create products.")
+                return redirect('portal')
         if request.method == "POST":
             form =  ProductForm(request.POST, request.FILES, user_profile=user_profile)
             if form.is_valid():
@@ -171,11 +217,30 @@ def create_product_view(request):
         else:
             form = ProductForm(user_profile=user_profile) # I is required to pass user_profile to the form to get the brands and category created by the user
 
-        return render(request, 'portal/create_product.html', {'productForm': form, 'edit': False})
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/create_product.html', {
+                'productForm': form, 
+                'edit': False
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'Create Product',
+                'heading': 'Create Product'
+            })
+        else:
+            return render(request, 'portal/create_product.html', {'productForm': form, 'edit': False})
     
     except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
         # brand = Brand.objects.filter(owner = UserProfile.objects.filter(user = request.user).first()).first()
 
 @login_required(login_url='login_page')
@@ -185,8 +250,14 @@ def my_products_view(request):
         user_profile = UserProfile.objects.get(user=request.user)
         
         if user_profile.role != 'seller':
-            messages.error(request, "Only sellers can view their products.")
-            return redirect('portal')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Only sellers can view their products.'
+                })
+            else:
+                messages.error(request, "Only sellers can view their products.")
+                return redirect('portal')
         
         brands = Brand.objects.select_related('owner').filter(owner=user_profile)
         products = Product.objects.select_related('brand','owner__user').filter(owner=user_profile).order_by('-product_id')
@@ -204,18 +275,54 @@ def my_products_view(request):
             paginated_products = paginator.page(paginator.num_pages)
        
         if not products.exists():
-            messages.info(request, "You have no products yet.")
-            return redirect('portal')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You have no products yet.'
+                })
+            else:
+                messages.info(request, "You have no products yet.")
+                return redirect('portal')
 
-        return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'my_products','brands':brands,'selected_brand': selected_brand,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/dashboard.html', {
+                'products': paginated_products,
+                'source': 'my_products',
+                'brands': brands,
+                'selected_brand': selected_brand,
+                'title': 'My Products',
+                'heading': 'My Products',
+                'show_actions': True
+            })
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'My Products',
+                'heading': 'My Products'
+            })
+        else:
+            return render(request, 'portal/dashboard.html', {'products': paginated_products,'source': 'my_products','brands':brands,'selected_brand': selected_brand,'title': 'My Products_', 'heading': 'My Products','show_actions': True})
     
     except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
     except Exception as e:
         logger.exception("Error fetching user's products: %s", e)
-        messages.error(request, "Something went wrong while fetching your products.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching your products.'
+            })
+        else:
+            messages.error(request, "Something went wrong while fetching your products.")
+            return redirect('portal')
 
 @login_required(login_url='login_page')
 def edit_product_view(request,product_id):
@@ -274,16 +381,54 @@ def product_details_view(request, product_id):
         print("Shown Actions: ******************: ", show_actions,": ", source)
         product = get_object_or_404(Product, product_id=product_id)
         if not product.status:
-            messages.error(request, "This product is not available.")
-            return redirect('my_products_page')
-        return render(request, 'portal/product_details.html', {'product': product,'show_actions':show_actions, 'title': 'Product Details', 'heading': 'Product Details'})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'This product is not available.'
+                })
+            else:
+                messages.error(request, "This product is not available.")
+                return redirect('my_products_page')
+        
+        context = {
+            'product': product,
+            'show_actions': show_actions, 
+            'title': 'Product Details', 
+            'heading': 'Product Details',
+            'role': get_userRole(request)
+        }
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/product_details.html', context)
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'Product Details',
+                'heading': 'Product Details'
+            })
+        else:
+            return render(request, 'portal/product_details.html', context)
+            
     except ObjectDoesNotExist:
-        messages.error(request, "Product not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Product not found.'
+            })
+        else:
+            messages.error(request, "Product not found.")
+            return redirect('portal')
     except Exception as e:
         logger.exception(f"Error fetching product details: {e}")
-        messages.error(request, "Something went wrong while fetching product details.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching product details.'
+            })
+        else:
+            messages.error(request, "Something went wrong while fetching product details.")
+            return redirect('portal')
 
 #Brand
 @login_required(login_url='login_page')
@@ -295,8 +440,14 @@ def create_brand_view(request):
                 user_profile = UserProfile.objects.get(user=request.user)
                 logger.info(f"UserProfile found: {user_profile}, Role: {user_profile.role}")
                 if user_profile.role != 'seller':
-                    messages.error(request, "Only sellers can create brands.")
-                    return redirect('create_brand_page')
+                    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                        return JsonResponse({
+                            'success': False,
+                            'message': 'Only sellers can create brands.'
+                        })
+                    else:
+                        messages.error(request, "Only sellers can create brands.")
+                        return redirect('create_brand_page')
 
                 brand = brandForm.save(commit=False)
                 brand.owner = user_profile
@@ -307,46 +458,80 @@ def create_brand_view(request):
                 return redirect('portal')
 
             except UserProfile.DoesNotExist:
-                messages.error(request, "No user profile found for this user.")
-                return redirect('create_brand_page')
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': 'No user profile found for this user.'
+                    })
+                else:
+                    messages.error(request, "No user profile found for this user.")
+                    return redirect('create_brand_page')
             except Exception as e:
                 logger.exception(f"Error during brand creation: {e}")
-                messages.error(request, f"Error creating brand: {e}")
-                return redirect('create_brand_page')
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error creating brand: {e}'
+                    })
+                else:
+                    messages.error(request, f"Error creating brand: {e}")
+                    return redirect('create_brand_page')
         else:
             logger.exception("Something wrong while validating brand creation Form")
-            messages.error(request, "Enter data in proper format")
-            return redirect('create_brand_page')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Enter data in proper format'
+                })
+            else:
+                messages.error(request, "Enter data in proper format")
+                return redirect('create_brand_page')
     else:
         brandForm = BrandForm()
-    return render(request, 'portal/create_brand.html', {'brand':brandForm, 'edit': False, 'title': 'Create Brand', 'heading': 'Create Brand'})
+        
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX request
+        html = render_to_string('portal/create_brand.html', {
+            'brand': brandForm, 
+            'edit': False, 
+            'title': 'Create Brand', 
+            'heading': 'Create Brand'
+        }, request=request)
+        return JsonResponse({
+            'success': True,
+            'html': html,
+            'title': 'Create Brand',
+            'heading': 'Create Brand'
+        })
+    else:
+        return render(request, 'portal/create_brand.html', {'brand':brandForm, 'edit': False, 'title': 'Create Brand', 'heading': 'Create Brand'})
 
 def all_brands_view(request):
     try:
         from portal.models import Brand
         brands = Brand.objects.all()
         
+        context = {
+            'brands': brands, 
+            'title': 'Brands',
+            'heading': 'Brands',
+            'show_actions': False,
+            'role': get_userRole(request),
+            'is_my': False
+        }
+        
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # AJAX request
-            html = render_to_string('portal/partials/brands_list.html', {
-                'brands': brands,
-                'is_my': False,
-                'show_actions': False
-            })
+            # AJAX request - return the full template
+            html = render_to_string('portal/all_brands.html', context)
             return JsonResponse({
                 'success': True,
                 'html': html,
-                'heading': 'All Brands',
-                'show_actions': False
+                'title': 'Brands',
+                'heading': 'All Brands'
             })
         else:
             # Regular request
-            return render(request, 'portal/all_brands.html', {
-                'brands': brands, 
-                'title': 'Brands',
-                'heading': 'Brands',
-                'show_actions': False
-            })
+            return render(request, 'portal/all_brands.html', context)
     except Exception as e:
         logger.error(f"Error in All_Brands_View: {str(e)}")
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
@@ -356,7 +541,7 @@ def all_brands_view(request):
             })
         else:
             return render(request, 'portal/all_brands.html', {
-                'brands': [], 
+                'brands': [],
                 'error': 'Something went wrong while fetching brands.'
             })
 @login_required(login_url='login_page')
@@ -376,18 +561,19 @@ def my_brands_view(request):
         brands = Brand.objects.filter(owner=user_profile)
         
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            # AJAX request
-            html = render_to_string('portal/partials/brands_list.html', {
-                'brands': brands,
-                'is_my': True,
+            # AJAX request - return the full template
+            html = render_to_string('portal/all_brands.html', {
+                'brands': brands, 
+                'is_my': True, 
+                'title': 'My Brands',
+                'heading': 'My Brands', 
                 'show_actions': True
             })
-            print("DOne")
             return JsonResponse({
                 'success': True,
                 'html': html,
-                'heading': 'My Brands',
-                'show_actions': True
+                'title': 'My Brands',
+                'heading': 'My Brands'
             })
         else:
             # Regular request
@@ -495,14 +681,26 @@ def create_category_view(request):
     user_profile = UserProfile.objects.filter(user = request.user).first()
 
     if not user_profile:
-        logger.warning(f"No user profile found for user: {request.user}")
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
+            logger.warning(f"No user profile found for user: {request.user}")
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
     
     if user_profile.role != 'seller':
-        logger.warning(f"Unauthorized access by user {request.user} with role {user_profile.role}")
-        messages.error(request, "Only sellers can view their brands.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Only sellers can create categories.'
+            })
+        else:
+            logger.warning(f"Unauthorized access by user {request.user} with role {user_profile.role}")
+            messages.error(request, "Only sellers can create categories.")
+            return redirect('portal')
 
     if request.method == "POST":
         form = CategoryForm(request.POST)
@@ -514,15 +712,40 @@ def create_category_view(request):
                 return redirect('portal')
             except Exception as e:
                 logger.exception(f"Exception occurred while saving category by user {request.user}: {e}")
-                messages.error(request, f"Error creating category: {e}")
-                return redirect('create_category_page')
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error creating category: {e}'
+                    })
+                else:
+                    messages.error(request, f"Error creating category: {e}")
+                    return redirect('create_category_page')
         else:
             logger.warning(f"Form errors while creating category by user {request.user}: {form.errors}")
-            messages.error(request, f"{form.errors}")
-            return redirect('create_category_page')
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Form errors: {form.errors}'
+                })
+            else:
+                messages.error(request, f"{form.errors}")
+                return redirect('create_category_page')
     else:
         form = CategoryForm()
-    return render(request, 'portal/create_category.html', {'categoryForm': form})
+        
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX request
+        html = render_to_string('portal/create_category.html', {
+            'categoryForm': form
+        }, request=request)
+        return JsonResponse({
+            'success': True,
+            'html': html,
+            'title': 'Register Category',
+            'heading': 'Register Category'
+        })
+    else:
+        return render(request, 'portal/create_category.html', {'categoryForm': form})
 
 
 
@@ -532,24 +755,67 @@ def view_profile_view(request):
     try:
         user_profile = UserProfile.objects.get(user=request.user)
         if not user_profile:
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': False,
+                    'message': 'User profile not found.'
+                })
+            else:
+                messages.error(request, "User profile not found.")
+                return redirect('portal')
+        
+        context = {
+            'profile': user_profile, 
+            'title': 'View Profile', 
+            'heading': 'View Profile',
+            'user': request.user
+        }
+        
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/view_profile.html', context)
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'View Profile',
+                'heading': 'View Profile'
+            })
+        else:
+            return render(request, 'portal/view_profile.html', context)
+            
+    except UserProfile.DoesNotExist:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
             messages.error(request, "User profile not found.")
             return redirect('portal')
-        return render(request, 'portal/view_profile.html', {'profile': user_profile, 'title': 'View Profile', 'heading': 'View Profile'})
-    except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
     except Exception as e:
         logger.exception(f"Error fetching user profile: {e}")
-        messages.error(request, "Something went wrong while fetching your profile.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'Something went wrong while fetching your profile.'
+            })
+        else:
+            messages.error(request, "Something went wrong while fetching your profile.")
+            return redirect('portal')
     
 @login_required(login_url='login_page')
 def edit_profile_view(request):
     try:
        user_profile = UserProfile.objects.get(user=request.user)
     except UserProfile.DoesNotExist:
-        messages.error(request, "User profile not found.")
-        return redirect('portal')
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({
+                'success': False,
+                'message': 'User profile not found.'
+            })
+        else:
+            messages.error(request, "User profile not found.")
+            return redirect('portal')
 
     if request.method == 'POST':
         form = UserCombinedProfileForm(request.POST, user_instance=request.user, profile_instance=user_profile)
@@ -560,12 +826,36 @@ def edit_profile_view(request):
                 return redirect('view_profile_page')
             except Exception as e:
                 logger.exception(f"Error updating profile: {e}")
-                messages.error(request, f"Error updating profile: {e}")
-                return redirect('edit_profile_page')
+                if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                    return JsonResponse({
+                        'success': False,
+                        'message': f'Error updating profile: {e}'
+                    })
+                else:
+                    messages.error(request, f"Error updating profile: {e}")
+                    return redirect('edit_profile_page')
     else:
         form = UserCombinedProfileForm(user_instance=request.user, profile_instance=user_profile)
 
-        return render(request, 'portal/update_profile.html', {'form': form, 'title': 'Edit Profile', 'heading': 'Edit Profile'})
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            # AJAX request
+            html = render_to_string('portal/update_profile.html', {
+                'form': form, 
+                'title': 'Edit Profile', 
+                'heading': 'Edit Profile'
+            }, request=request)
+            return JsonResponse({
+                'success': True,
+                'html': html,
+                'title': 'Edit Profile',
+                'heading': 'Edit Profile'
+            })
+        else:
+            return render(request, 'portal/update_profile.html', {
+                'form': form, 
+                'title': 'Edit Profile', 
+                'heading': 'Edit Profile'
+            })
     
 #Serach
 def search_products_view(request):
