@@ -51,7 +51,7 @@
             <!-- User Actions -->
             <div class="hidden md:flex items-center space-x-4">
                 {% if request.user.is_authenticated %}
-                    <a href="{% url 'view_profile_page' %}" class="relative block w-10 h-10 rounded-full overflow-hidden border-2 border-gray-600 hover:border-gray-500 transition-all duration-300">
+                    <a href="{% url 'view_profile_page' %}" class="profile-btn relative block w-10 h-10 rounded-full overflow-hidden border-2 border-gray-600 hover:border-gray-500 transition-all duration-300">
                         <div class="w-full h-full bg-gray-700 flex items-center justify-center text-lg text-white font-bold uppercase">
                             {{ request.user.username|slice:":1" }}
                         </div>

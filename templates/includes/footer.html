@@ -13,12 +13,12 @@
                     Home
                     <span class="absolute bottom-0 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
                 </a>
-                {% if role == 'seller' %}
+                {% comment %} {% if role == 'seller' %}
                     <a href="{% url "create_category_page" %}" class="transition hover:text-white relative group">
                         Register Category
                         <span class="absolute bottom-0 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>
                     </a>
-                {% endif %}
+                {% endif %} {% endcomment %}
                 <a href="#" class="transition hover:text-white relative group">
                     Terms
                     <span class="absolute bottom-0 left-0 w-full h-0.5 bg-gray-500 transition-transform duration-300 scale-x-0 group-hover:scale-x-100"></span>

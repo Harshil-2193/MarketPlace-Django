@@ -1,8 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
-    addLoadingStyles();
-    
-    const navLinks = document.querySelectorAll('nav a[href*="/"], #mobile-menu a[href*="/"]');
-    
+    // addLoadingStyles();
+
+    const navLinks = document.querySelectorAll('nav a[href*="/"], #mobile-menu a[href*="/"], .profile-btn, .updateProfile-btn');
+    // const profilebtn = document.querySelector('.profile-btn')
     navLinks.forEach(link => {
         if (shouldSkipAjax(link)) {
             return;
@@ -24,34 +24,34 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Function to add loading overlay styles
-function addLoadingStyles() {
-    const style = document.createElement('style');
-    style.textContent = `
-        #loading-overlay {
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
+// function addLoadingStyles() {
+//     const style = document.createElement('style');
+//     style.textContent = `
+//         #loading-overlay {
+//             backdrop-filter: blur(4px);
+//             -webkit-backdrop-filter: blur(4px);
+//         }
         
-        #loading-overlay .animate-spin {
-            animation: spin 1s linear infinite;
-        }
+//         #loading-overlay .animate-spin {
+//             animation: spin 1s linear infinite;
+//         }
         
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
+//         @keyframes spin {
+//             from { transform: rotate(0deg); }
+//             to { transform: rotate(360deg); }
+//         }
         
-        .loading-fade-in {
-            animation: fadeIn 0.3s ease-in-out;
-        }
+//         .loading-fade-in {
+//             animation: fadeIn 0.3s ease-in-out;
+//         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
-}
+//         @keyframes fadeIn {
+//             from { opacity: 0; }
+//             to { opacity: 1; }
+//         }
+//     `;
+//     document.head.appendChild(style);
+// }
 
 // Function to determine if a link should skip AJAX
 function shouldSkipAjax(link) {
@@ -60,8 +60,8 @@ function shouldSkipAjax(link) {
         'logout',
         'login',
         'register',
-        'view_profile',
-        'update_profile',
+        // 'view_profile',
+        // 'update_profile',
         'edit_product',
         'delete_product'
     ];
@@ -72,7 +72,7 @@ function shouldSkipAjax(link) {
 // Function to load content via AJAX
 function loadContentAjax(url, linkElement, isPopState = false) {
     // Show loading state
-    showLoadingState();
+    // showLoadingState();
     
     // Update active link styling
     if (linkElement && !isPopState) {
@@ -97,19 +97,15 @@ function loadContentAjax(url, linkElement, isPopState = false) {
             updateMainContent(data.html);
             
             // Update page title
-            if (data.title) {
+            if (data.title) 
                 document.title = data.title;
-            }
             
-            // Update URL without page reload
-            if (!isPopState) {
+            if (!isPopState) 
                 window.history.pushState({url: url}, '', url);
-            }
             
-            // Show success message if any
-            if (data.message) {
+            if (data.message) 
                 showMessage(data.message, 'success');
-            }
+            
         } else {
             // Handle error
             showMessage(data.message || 'Failed to load content', 'error');
@@ -134,15 +130,11 @@ function loadContentAjax(url, linkElement, isPopState = false) {
 function updateMainContent(html) {
     const mainContent = document.querySelector('main');
     if (mainContent) {
-        // Create a temporary container to parse the HTML
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = html;
         
-        // Extract the content from the block content
         const contentBlock = tempDiv.querySelector('[data-content-block]') || tempDiv;
         
-        // Update the main content
-        // Preserve the wrapper to keep alignment/spacing/styles consistent
         mainContent.innerHTML = contentBlock.outerHTML;
         
         // Reinitialize any scripts that might be in the new content
@@ -196,31 +188,31 @@ function updateActiveLink(activeLink) {
 }
 
 // Function to show loading state
-function showLoadingState() {
-    // Create loading overlay if it doesn't exist
-    if (!document.getElementById('loading-overlay')) {
-        const overlay = document.createElement('div');
-        overlay.id = 'loading-overlay';
-        overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
-        overlay.innerHTML = `
-            <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
-                <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span class="text-gray-700">Loading...</span>
-            </div>
-        `;
-        document.body.appendChild(overlay);
-    }
+// function showLoadingState() {
+//     // Create loading overlay if it doesn't exist
+//     if (!document.getElementById('loading-overlay')) {
+//         const overlay = document.createElement('div');
+//         overlay.id = 'loading-overlay';
+//         overlay.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+//         overlay.innerHTML = `
+//             <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+//                 <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+//                 <span class="text-gray-700">Loading...</span>
+//             </div>
+//         `;
+//         document.body.appendChild(overlay);
+//     }
     
-    document.getElementById('loading-overlay').style.display = 'flex';
-}
+//     document.getElementById('loading-overlay').style.display = 'flex';
+// }
 
 // Function to hide loading state
-function hideLoadingState() {
-    const overlay = document.getElementById('loading-overlay');
-    if (overlay) {
-        overlay.style.display = 'none';
-    }
-}
+// function hideLoadingState() {
+//     const overlay = document.getElementById('loading-overlay');
+//     if (overlay) {
+//         overlay.style.display = 'none';
+//     }
+// }
 
 // Function to show messages
 function showMessage(message, type = 'info') {
@@ -244,10 +236,12 @@ function showMessage(message, type = 'info') {
     }, 5000);
 }
 
+
 function reinitializePageScripts() {
     
     const forms = document.querySelectorAll('form');
     forms.forEach(form => {
+        form.setAttribute("data-ajax-form", "true");
         if (!form.hasAttribute('data-ajax-initialized')) {
             form.setAttribute('data-ajax-initialized', 'true');
             form.addEventListener('submit', handleFormSubmit);
@@ -320,7 +314,7 @@ function handleFormSubmit(e) {
                 // Handle success (e.g., redirect, update content, etc.)
             } else {
                 showMessage(data.message || 'Form submission failed', 'error');
-            }
+            } 
         })
         .catch(error => {
             console.error('Form submission error:', error);
@@ -333,8 +327,8 @@ function handleFormSubmit(e) {
 window.AjaxNavigation = {
     loadContent: loadContentAjax,
     showMessage: showMessage,
-    showLoading: showLoadingState,
-    hideLoading: hideLoadingState
+    // showLoading: showLoadingState,
+    // hideLoading: hideLoadingState
 };
 
 // Minimal helper: read CSRF token from cookie
@@ -350,3 +344,4 @@ function getCsrfToken() {
     }
     return '';
 }
+
