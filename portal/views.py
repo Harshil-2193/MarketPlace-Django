@@ -747,8 +747,6 @@ def create_category_view(request):
     else:
         return render(request, 'portal/create_category.html', {'categoryForm': form})
 
-
-
 #Profile
 @login_required(login_url='login_page')    
 def view_profile_view(request):

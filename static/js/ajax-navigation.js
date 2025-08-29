@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // addLoadingStyles();
 
-    const navLinks = document.querySelectorAll('nav a[href*="/"], #mobile-menu a[href*="/"], .profile-btn, .updateProfile-btn');
+    const navLinks = document.querySelectorAll('nav a[href*="/"], #mobile-menu a[href*="/"], .profile-btn, .updateProfile-btn, .backToDashboard-btn');
     // const profilebtn = document.querySelector('.profile-btn')
     navLinks.forEach(link => {
         if (shouldSkipAjax(link)) {
@@ -245,6 +245,17 @@ function reinitializePageScripts() {
         if (!form.hasAttribute('data-ajax-initialized')) {
             form.setAttribute('data-ajax-initialized', 'true');
             form.addEventListener('submit', handleFormSubmit);
+        }
+    });
+    const ajaxLinks = document.querySelectorAll('.profile-btn, .updateProfile-btn, .backToDashboard-btn');
+    ajaxLinks.forEach(link => {
+        if (!link.hasAttribute('data-ajax-initialized')) {
+            link.setAttribute('data-ajax-initialized', 'true');
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                loadContentAjax(url, this);
+            });
         }
     });
     
